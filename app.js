@@ -66,6 +66,10 @@ const app = {
         this.socket.on('game_update', (data) => {
             this.updateUI(data);
         });
+
+        this.socket.on('chat_message', (data) => {
+            this.addChatMessage(data);
+        });
     },
 
     bindEvents() {
