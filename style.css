@@ -429,12 +429,29 @@ input:focus {
         transform: scale(1);
     }
 }
+
 /* Mobile fix for lobby scrolling */
-#lobby-screen { overflow-y: auto !important; justify-content: flex-start !important; }
-.logo-container { padding-top: 1rem; }
-.hyena-logo img { max-width: 200px !important; }
-.input-group { margin: 1rem 0 !important; }
-.logo-container h1 { font-size: 2rem !important; margin-bottom: 1rem !important; }
+#lobby-screen {
+    overflow-y: auto !important;
+    justify-content: flex-start !important;
+}
+
+.logo-container {
+    padding-top: 1rem;
+}
+
+.hyena-logo img {
+    max-width: 200px !important;
+}
+
+.input-group {
+    margin: 1rem 0 !important;
+}
+
+.logo-container h1 {
+    font-size: 2rem !important;
+    margin-bottom: 1rem !important;
+}
 
 /* Alert Modal */
 .alert-box {
@@ -510,7 +527,7 @@ input:focus {
     outline: none;
 }
 
-#chat-content {
+#chat-content.active {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -533,4 +550,3 @@ input:focus {
     background: red;
     border-radius: 50%;
 }
-
