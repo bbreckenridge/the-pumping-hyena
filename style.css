@@ -1,0 +1,437 @@
+:root {
+    --primary-color: #D97706;
+    --secondary-color: #3F6212;
+    --bg-color: #FDF6E3;
+    --text-color: #292524;
+    --card-bg: #FEFCE8;
+    --danger-color: #DC2626;
+    --font-family: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+#app {
+    width: 100%;
+    max-width: 600px;
+    height: 100%;
+    position: relative;
+    background: #FFFBEB;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Lobby */
+#lobby-screen {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+}
+
+.logo-container {
+    text-align: center;
+}
+
+.logo-container h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.logo-container p {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.hyena-logo {
+    margin: 1rem 0;
+}
+
+.hyena-logo img {
+    max-width: 300px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: pump 2s infinite alternate ease-in-out;
+}
+
+@keyframes pump {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.05);
+    }
+}
+
+.input-group {
+    margin: 2rem 0;
+    width: 100%;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: var(--primary-color);
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn.secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn.danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn.small {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.divider {
+    margin: 1.5rem 0;
+    color: #9CA3AF;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.divider span {
+    padding: 0 10px;
+}
+
+.join-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Game Screen */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #E5E7EB;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.current-turn {
+    font-weight: 700;
+    color: var(--primary-color);
+    background: rgba(217, 119, 6, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 2px solid var(--primary-color);
+}
+
+#game-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+/* Timers Section */
+#timers-section {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    min-height: 100px;
+}
+
+#timers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.timer-item {
+    background: #ECFCCB;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.timer-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.timer-val {
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+
+/* Center Table */
+#table-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.card-pile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-back-visual {
+    width: 160px;
+    height: 100px;
+    background-image: url('card_back.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 4px solid white;
+}
+
+.mini-card {
+    width: 160px;
+    height: 100px;
+    background-image: url('card_front_bg.png');
+    background-size: cover;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #E5E7EB;
+}
+
+.action-btn {
+    background: var(--primary-color);
+    color: white;
+    width: auto;
+    padding: 10px 20px;
+    box-shadow: 0 4px 0 #B45309;
+    transform: translateY(0);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.action-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #B45309;
+}
+
+/* Info Section */
+#info-section {
+    flex: 1;
+    background: white;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #E5E7EB;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: #9CA3AF;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+    padding: 10px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.log-entry {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+/* Modal */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-modal-content {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+.card-face {
+    background-image: url('card_front_bg.png');
+    background-size: cover;
+    width: 100%;
+    aspect-ratio: 5/3;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border: 8px solid white;
+    transform: rotate(-2deg);
+}
+
+.card-face h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.card-face p {
+    font-size: 1.1rem;
+    line-height: 1.4;
+}
+
+.timer-badge {
+    margin-top: 15px;
+    background: var(--secondary-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+/* Mobile fix for lobby scrolling */
+#lobby-screen { overflow-y: auto !important; justify-content: flex-start !important; }
+.logo-container { padding-top: 1rem; }
+.hyena-logo img { max-width: 200px !important; }
+.input-group { margin: 1rem 0 !important; }
+.logo-container h1 { font-size: 2rem !important; margin-bottom: 1rem !important; }

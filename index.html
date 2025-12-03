@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Pumping Hyena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen active">
+            <div class="logo-container">
+                <h1>The Pumping Hyena</h1>
+                <div class="hyena-logo">
+                    <img src="card_back.png" alt="The Pumping Hyena">
+                </div>
+                <p>A wild party drinking game!</p>
+            </div>
+
+            <div class="input-group">
+                <label>Your Name</label>
+                <input type="text" id="player-name" placeholder="Enter your name">
+            </div>
+
+            <div class="actions">
+                <button id="create-btn" class="btn primary">Start New Game</button>
+
+                <div class="divider"><span>OR</span></div>
+
+                <div class="join-group">
+                    <input type="text" id="room-code-input" placeholder="Room Code" maxlength="4">
+                    <button id="join-btn" class="btn secondary">Join Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <header class="game-header">
+                <div class="room-info">Room: <span id="room-code-display">----</span></div>
+                <div id="current-turn" class="current-turn">Waiting...</div>
+                <button id="reset-btn" class="btn danger small">Reset</button>
+            </header>
+
+            <div id="game-layout">
+                <!-- Timers Section -->
+                <div id="timers-section">
+                    <h3>Active Timers</h3>
+                    <div id="timers-list">
+                        <div class="empty-state">No active timers</div>
+                    </div>
+                </div>
+
+                <!-- Center Table -->
+                <div id="table-center">
+                    <div id="deck-area" class="card-pile">
+                        <div class="card-back-visual"></div>
+                        <button id="draw-btn" class="btn action-btn">Draw Card</button>
+                        <span class="pile-label">Deck (<span id="deck-count">0</span>)</span>
+                    </div>
+
+                    <div id="last-card-area">
+                        <h3>Last Drawn</h3>
+                        <div id="last-card-display" class="mini-card" style="cursor: pointer;"
+                            title="Click to view discard pile">
+                            <p>None</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs/Players -->
+                <div id="info-section">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="logs">Logs</button>
+                        <button class="tab-btn" data-tab="players">Players</button>
+                    </div>
+                    <div id="logs-content" class="tab-content active">
+                        <!-- Logs here -->
+                    </div>
+                    <div id="players-content" class="tab-content">
+                        <!-- Players list here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Reveal Modal -->
+    <div id="card-modal" class="overlay hidden">
+        <div class="modal-content card-modal-content">
+            <div class="card-face">
+                <h2 id="modal-card-title">Title</h2>
+                <p id="modal-card-text">Description</p>
+                <div id="modal-timer-badge" class="timer-badge hidden">⏱ <span id="modal-timer-val">30</span>s</div>
+            </div>
+            <button id="modal-close-btn" class="btn primary">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Discard Pile Modal -->
+    <div id="discard-modal" class="overlay hidden">
+        <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <h2 style="margin-bottom: 1rem; color: var(--primary-color);">📚 Discard Pile</h2>
+            <div id="discard-list" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Discard cards will be listed here -->
+            </div>
+            <button id="discard-close-btn" class="btn secondary" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
+    <!-- Alert Overlay -->
+    <div id="alert-overlay" class="overlay hidden">
+        <div class="alert-box">
+            <h2 id="alert-title">Alert</h2>
+            <p id="alert-message">Message</p>
+            <button id="alert-ok" class="btn primary">OK</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
