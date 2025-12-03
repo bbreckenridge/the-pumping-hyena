@@ -435,3 +435,28 @@ input:focus {
 .hyena-logo img { max-width: 200px !important; }
 .input-group { margin: 1rem 0 !important; }
 .logo-container h1 { font-size: 2rem !important; margin-bottom: 1rem !important; }
+
+/* Alert Modal */
+.alert-box {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.alert-box h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.alert-box p {
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
