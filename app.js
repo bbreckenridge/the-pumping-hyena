@@ -237,15 +237,23 @@ const app = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ room_code: this.state.roomCode, player_name: this.state.playerName })
             });
+
+            if (!res.ok) {
+                console.error('Draw card failed:', res.status, res.statusText);
+                this.showAlert('Error', `Server error: ${res.status}`);
+                return;
+            }
+
             const data = await res.json();
 
             if (data.success) {
                 this.showCardModal(data.card);
             } else {
-                this.showAlert('Info', data.message);
+                this.showAlert('Info', data.message || 'Could not draw card');
             }
         } catch (e) {
-            this.showAlert('Error', 'Failed to draw card.');
+            console.error('Draw card error:', e);
+            this.showAlert('Error', 'Failed to draw card. Please try again.');
         }
     },
 
