@@ -76,6 +76,11 @@ app.post('/api/join_game', (req, res) => {
         return res.json({ success: false, message: 'Player name too long (max 20 characters)' });
     }
 
+    // Validate room code format
+    if (!room_code || room_code.length !== 6) {
+        return res.json({ success: false, message: 'Invalid room code. Room codes are 6 characters.' });
+    }
+
     if (games[room_code]) {
         if (!games[room_code].players.find(p => p.name === player_name)) {
             games[room_code].players.push({
@@ -88,7 +93,7 @@ app.post('/api/join_game', (req, res) => {
         }
         res.json({ success: true });
     } else {
-        res.json({ success: false, message: 'Room not found' });
+        res.json({ success: false, message: 'Game not found. Check the room code and try again.' });
     }
 });
 
