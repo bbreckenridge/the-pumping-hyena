@@ -230,6 +230,22 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
     });
+
+    socket.on('chat_message', (data) => {
+        const { room_code, player_name, message } = data;
+        if (games[room_code]) {
+            // Sanitize message
+            const sanitizedMessage = validator.escape(message.substring(0, 200));
+
+            const chatData = {
+                player: player_name,
+                text: sanitizedMessage,
+                timestamp: Date.now()
+            };
+
+            io.to(room_code).emit('chat_message', chatData);
+        }
+    });
 });
 
 // Helper Functions

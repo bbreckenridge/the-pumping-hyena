@@ -2,7 +2,9 @@ const app = {
     state: {
         roomCode: null,
         playerName: null,
-        currentPlayer: null
+        currentPlayer: null,
+        unreadMessages: 0,
+        activeTab: 'logs'
     },
 
     socket: null,
@@ -44,7 +46,13 @@ const app = {
 
         // Tabs
         tabBtns: document.querySelectorAll('.tab-btn'),
-        tabContents: document.querySelectorAll('.tab-content')
+        tabContents: document.querySelectorAll('.tab-content'),
+
+        // Chat
+        chatContent: document.getElementById('chat-content'),
+        chatMessages: document.getElementById('chat-messages'),
+        chatInput: document.getElementById('chat-input'),
+        sendChatBtn: document.getElementById('send-chat-btn')
     },
 
     init() {
@@ -69,12 +77,28 @@ const app = {
         this.elements.lastCardDisplay.addEventListener('click', () => this.viewDiscardPile());
         this.elements.discardCloseBtn.addEventListener('click', () => this.closeDiscardModal());
         this.elements.alertOk.addEventListener('click', () => this.closeAlert());
+        this.elements.sendChatBtn.addEventListener('click', () => this.sendChatMessage());
+        this.elements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendChatMessage();
+        });
 
         this.elements.tabBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const tab = e.target.dataset.tab;
                 this.switchTab(tab);
             });
+        });
+    },
+
+    setupSocket() {
+        this.socket = io();
+
+        this.socket.on('game_update', (data) => {
+            this.updateUI(data);
+        });
+
+        this.socket.on('chat_message', (data) => {
+            this.addChatMessage(data);
         });
     },
 
@@ -295,6 +319,8 @@ const app = {
     },
 
     switchTab(tabName) {
+        this.state.activeTab = tabName;
+
         this.elements.tabBtns.forEach(btn => {
             if (btn.dataset.tab === tabName) btn.classList.add('active');
             else btn.classList.remove('active');
@@ -304,6 +330,25 @@ const app = {
             if (content.id === `${tabName}-content`) content.classList.add('active');
             else content.classList.remove('active');
         });
+
+        // Reset unread count if switching to chat
+        if (tabName === 'chat') {
+            this.state.unreadMessages = 0;
+            this.updateChatTabLabel();
+        }
+    },
+
+    updateChatTabLabel() {
+        const chatTabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
+        if (chatTabBtn) {
+            if (this.state.unreadMessages > 0) {
+                chatTabBtn.textContent = `Chat (${this.state.unreadMessages})`;
+                chatTabBtn.classList.add('has-unread');
+            } else {
+                chatTabBtn.textContent = 'Chat';
+                chatTabBtn.classList.remove('has-unread');
+            }
+        }
     },
 
     async viewDiscardPile() {
@@ -335,6 +380,45 @@ const app = {
 
     closeDiscardModal() {
         this.elements.discardModal.classList.add('hidden');
+    },
+
+    sendChatMessage() {
+        const message = this.elements.chatInput.value.trim();
+        if (!message || !this.state.roomCode || !this.state.playerName) return;
+
+        this.socket.emit('chat_message', {
+            room_code: this.state.roomCode,
+            player_name: this.state.playerName,
+            message: message
+        });
+
+        this.elements.chatInput.value = '';
+    },
+
+    addChatMessage(data) {
+        const messagesContainer = this.elements.chatMessages;
+
+        // Remove empty state if present
+        const emptyState = messagesContainer.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message';
+        messageDiv.innerHTML = `
+            <span class="chat-player">${data.player}:</span>
+            <span class="chat-text">${data.text}</span>
+        `;
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Increment unread count if not on chat tab
+        if (this.state.activeTab !== 'chat') {
+            this.state.unreadMessages++;
+            this.updateChatTabLabel();
+        }
     }
 };
 
