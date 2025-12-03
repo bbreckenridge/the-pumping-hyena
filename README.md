@@ -1,5 +1,7 @@
 # The Pumping Hyena 🦁💪
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new)
+
 A wild party drinking game! Turn-based multiplayer card game with timers and challenges.
 
 ## Features
