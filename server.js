@@ -178,6 +178,7 @@ app.post('/api/draw_card', (req, res) => {
     // Advance to next player
     game.currentPlayerIndex = (game.currentPlayerIndex + 1) % game.players.length;
     game.logs.push(`Next up: ${game.players[game.currentPlayerIndex].name}`);
+    game.lastActivity = Date.now();
 
     io.to(room_code).emit('game_update', getGameState(room_code));
     res.json({ success: true, card });
