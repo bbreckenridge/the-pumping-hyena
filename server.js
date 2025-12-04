@@ -64,7 +64,8 @@ app.post('/api/create_game', (req, res) => {
         logs: ['Welcome to The Pumping Hyena!', 'A wild party drinking game awaits!'],
         lastCard: null,
         currentPlayerIndex: 0,
-        lastActivity: Date.now()
+        lastActivity: Date.now(),
+        stats: {} // Player stats: { playerName: { cardsDrawn, shots, timersCompleted } }
     };
     console.log(`Created game: ${roomCode}`);
     res.json({ room_code: roomCode });
@@ -100,6 +101,12 @@ app.post('/api/join_game', (req, res) => {
                 name: player_name,
                 id: generateId()
             });
+            // Initialize stats for new player
+            games[room_code].stats[player_name] = {
+                cardsDrawn: 0,
+                shots: 0,
+                timersCompleted: 0
+            };
             games[room_code].logs.push(`${player_name} joined the pack.`);
             games[room_code].lastActivity = Date.now();
             io.to(room_code).emit('game_update', getGameState(room_code));
@@ -176,6 +183,11 @@ app.post('/api/draw_card', (req, res) => {
     }
     game.logs.push(logMessage);
 
+    // Update stats
+    if (game.stats[player_name]) {
+        game.stats[player_name].cardsDrawn++;
+    }
+
     if (card.timer_duration) {
         const timerId = generateId();
         game.timers.push({
@@ -228,6 +240,21 @@ app.get('/api/discard_pile', (req, res) => {
         });
     } else {
         res.status(404).json({ success: false, message: 'Game not found' });
+    }
+});
+
+app.post('/api/update_shots', (req, res) => {
+    const { room_code, player_name, change } = req.body;
+    if (games[room_code] && games[room_code].stats[player_name]) {
+        games[room_code].stats[player_name].shots += change;
+        // Ensure shots don't go negative
+        if (games[room_code].stats[player_name].shots < 0) {
+            games[room_code].stats[player_name].shots = 0;
+        }
+        io.to(room_code).emit('game_update', getGameState(room_code));
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
     }
 });
 
@@ -294,7 +321,8 @@ function getGameState(roomCode) {
         logs: game.logs.slice(-10),
         last_card: game.lastCard,
         current_player: game.players[game.currentPlayerIndex]?.name || null,
-        current_player_index: game.currentPlayerIndex
+        current_player_index: game.currentPlayerIndex,
+        stats: game.stats
     };
 }
 

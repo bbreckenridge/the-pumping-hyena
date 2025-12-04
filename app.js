@@ -53,7 +53,10 @@ const app = {
         chatContent: document.getElementById('chat-content'),
         chatMessages: document.getElementById('chat-messages'),
         chatInput: document.getElementById('chat-input'),
-        sendChatBtn: document.getElementById('send-chat-btn')
+        sendChatBtn: document.getElementById('send-chat-btn'),
+
+        // Stats
+        statsContent: document.getElementById('stats-content')
     },
 
     init() {
@@ -276,6 +279,11 @@ const app = {
 
         // Update Timers
         this.renderTimers(data.timers);
+
+        // Update Stats
+        if (data.stats) {
+            this.renderStats(data.stats);
+        }
     },
 
     renderTimers(timers) {
@@ -305,6 +313,52 @@ const app = {
                 </div>
             `;
         }).join('');
+    },
+
+    renderStats(stats) {
+        const statsArray = Object.entries(stats).map(([name, data]) => ({
+            name,
+            ...data
+        }));
+
+        if (statsArray.length === 0) {
+            this.elements.statsContent.innerHTML = '<div class="empty-state">No stats yet</div>';
+            return;
+        }
+
+        this.elements.statsContent.innerHTML = statsArray.map(player => `
+            <div class="stat-item">
+                <div class="stat-player-name">${player.name}</div>
+                <div class="stat-row">
+                    <span class="stat-label">🃏 Cards:</span>
+                    <span class="stat-value">${player.cardsDrawn}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">🥃 Shots:</span>
+                    <div class="shot-counter">
+                        <button class="shot-btn minus" onclick="app.updateShots('${player.name}', -1)">−</button>
+                        <span class="shot-value">${player.shots}</span>
+                        <button class="shot-btn plus" onclick="app.updateShots('${player.name}', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    async updateShots(playerName, change) {
+        try {
+            await fetch('/api/update_shots', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_code: this.state.roomCode,
+                    player_name: playerName,
+                    change: change
+                })
+            });
+        } catch (e) {
+            console.error('Failed to update shots:', e);
+        }
     },
 
     async drawCard() {

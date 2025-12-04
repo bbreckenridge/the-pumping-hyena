@@ -795,3 +795,78 @@ input[type="text"]:focus {
     gap: 15px;
 }
 
+
+/* Stats Styles */
+.stat-item {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-player-name {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #6B7280;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.shot-counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shot-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    background: white;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.shot-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+.shot-btn:active {
+    transform: scale(0.95);
+}
+
+.shot-value {
+    font-weight: 900;
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    min-width: 30px;
+    text-align: center;
+}
+
