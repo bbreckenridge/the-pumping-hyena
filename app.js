@@ -69,6 +69,11 @@ const app = {
         this.elements.lastCardDisplay.addEventListener('click', () => this.viewDiscardPile());
         this.elements.discardCloseBtn.addEventListener('click', () => this.closeDiscardModal());
         this.elements.alertOk.addEventListener('click', () => this.closeAlert());
+
+        // Auto-uppercase room code
+        this.elements.roomCodeInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
     },
 
     setupSocket() {
