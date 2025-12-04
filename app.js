@@ -236,6 +236,7 @@ const app = {
                             <div class="player-name">${isCurrent ? '👉 ' : ''}${p.name}</div>
                         </div>
                         <div class="shot-counter">
+                            <span style="font-size:0.8rem; color:#666; margin-right:4px;">🥃 Shots:</span>
                             <button class="shot-btn minus" onclick="app.updateShots('${p.name}', -1)">−</button>
                             <span class="shot-value">${playerStats.shots}</span>
                             <button class="shot-btn plus" onclick="app.updateShots('${p.name}', 1)">+</button>
