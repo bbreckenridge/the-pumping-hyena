@@ -3,8 +3,6 @@ const app = {
         roomCode: null,
         playerName: null,
         currentPlayer: null,
-        unreadMessages: 0,
-        activeTab: 'players',
         timerCount: 0
     },
 
@@ -20,7 +18,6 @@ const app = {
         roomCodeDisplay: document.getElementById('room-code-display'),
         currentTurn: document.getElementById('current-turn'),
         timersList: document.getElementById('timers-list'),
-        logsContent: document.getElementById('logs-content'),
         playersContent: document.getElementById('players-content'),
         deckCount: document.getElementById('deck-count'),
         lastCardDisplay: document.getElementById('last-card-display'),
@@ -43,20 +40,7 @@ const app = {
         alertOverlay: document.getElementById('alert-overlay'),
         alertTitle: document.getElementById('alert-title'),
         alertMessage: document.getElementById('alert-message'),
-        alertOk: document.getElementById('alert-ok'),
-
-        // Tabs
-        tabBtns: document.querySelectorAll('.tab-btn'),
-        tabContents: document.querySelectorAll('.tab-content'),
-
-        // Chat
-        chatContent: document.getElementById('chat-content'),
-        chatMessages: document.getElementById('chat-messages'),
-        chatInput: document.getElementById('chat-input'),
-        sendChatBtn: document.getElementById('send-chat-btn'),
-
-        // Stats
-        statsContent: document.getElementById('stats-content')
+        alertOk: document.getElementById('alert-ok')
     },
 
     init() {
@@ -85,17 +69,6 @@ const app = {
         this.elements.lastCardDisplay.addEventListener('click', () => this.viewDiscardPile());
         this.elements.discardCloseBtn.addEventListener('click', () => this.closeDiscardModal());
         this.elements.alertOk.addEventListener('click', () => this.closeAlert());
-        this.elements.sendChatBtn.addEventListener('click', () => this.sendChatMessage());
-        this.elements.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.sendChatMessage();
-        });
-
-        this.elements.tabBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tab = e.target.dataset.tab;
-                this.switchTab(tab);
-            });
-        });
     },
 
     setupSocket() {
@@ -103,10 +76,6 @@ const app = {
 
         this.socket.on('game_update', (data) => {
             this.updateUI(data);
-        });
-
-        this.socket.on('chat_message', (data) => {
-            this.addChatMessage(data);
         });
     },
 
@@ -255,14 +224,26 @@ const app = {
             }
         }
 
-        // Update Logs
-        this.elements.logsContent.innerHTML = data.logs.map(log => `<div class="log-entry">${log}</div>`).join('');
 
-        // Update Players
-        this.elements.playersContent.innerHTML = data.players.map((p, i) => {
-            const isCurrent = i === data.current_player_index;
-            return `<div style="padding:5px; ${isCurrent ? 'font-weight:bold; color:var(--primary-color);' : ''}">${isCurrent ? '👉 ' : ''}${p.name}</div>`;
-        }).join('');
+        // Update Players with shot counters
+        if (data.players && data.stats) {
+            this.elements.playersContent.innerHTML = data.players.map((p, i) => {
+                const isCurrent = i === data.current_player_index;
+                const playerStats = data.stats[p.name] || { shots: 0 };
+                return `
+                    <div class="player-item ${isCurrent ? 'active' : ''}">
+                        <div class="player-info">
+                            <div class="player-name">${isCurrent ? '👉 ' : ''}${p.name}</div>
+                        </div>
+                        <div class="shot-counter">
+                            <button class="shot-btn minus" onclick="app.updateShots('${p.name}', -1)">−</button>
+                            <span class="shot-value">${playerStats.shots}</span>
+                            <button class="shot-btn plus" onclick="app.updateShots('${p.name}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         // Update Deck Count
         this.elements.deckCount.textContent = data.deck_count;
@@ -279,11 +260,6 @@ const app = {
 
         // Update Timers
         this.renderTimers(data.timers);
-
-        // Update Stats
-        if (data.stats) {
-            this.renderStats(data.stats);
-        }
     },
 
     renderTimers(timers) {
@@ -313,36 +289,6 @@ const app = {
                 </div>
             `;
         }).join('');
-    },
-
-    renderStats(stats) {
-        const statsArray = Object.entries(stats).map(([name, data]) => ({
-            name,
-            ...data
-        }));
-
-        if (statsArray.length === 0) {
-            this.elements.statsContent.innerHTML = '<div class="empty-state">No stats yet</div>';
-            return;
-        }
-
-        this.elements.statsContent.innerHTML = statsArray.map(player => `
-            <div class="stat-item">
-                <div class="stat-player-name">${player.name}</div>
-                <div class="stat-row">
-                    <span class="stat-label">🃏 Cards:</span>
-                    <span class="stat-value">${player.cardsDrawn}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">🥃 Shots:</span>
-                    <div class="shot-counter">
-                        <button class="shot-btn minus" onclick="app.updateShots('${player.name}', -1)">−</button>
-                        <span class="shot-value">${player.shots}</span>
-                        <button class="shot-btn plus" onclick="app.updateShots('${player.name}', 1)">+</button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
     },
 
     async updateShots(playerName, change) {
@@ -428,39 +374,6 @@ const app = {
         this.elements.alertOverlay.classList.add('hidden');
     },
 
-    switchTab(tabName) {
-        this.state.activeTab = tabName;
-
-        this.elements.tabBtns.forEach(btn => {
-            if (btn.dataset.tab === tabName) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-
-        this.elements.tabContents.forEach(content => {
-            if (content.id === `${tabName}-content`) content.classList.add('active');
-            else content.classList.remove('active');
-        });
-
-        // Reset unread count if switching to chat
-        if (tabName === 'chat') {
-            this.state.unreadMessages = 0;
-            this.updateChatTabLabel();
-        }
-    },
-
-    updateChatTabLabel() {
-        const chatTabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
-        if (chatTabBtn) {
-            if (this.state.unreadMessages > 0) {
-                chatTabBtn.textContent = `Chat (${this.state.unreadMessages})`;
-                chatTabBtn.classList.add('has-unread');
-            } else {
-                chatTabBtn.textContent = 'Chat';
-                chatTabBtn.classList.remove('has-unread');
-            }
-        }
-    },
-
     async viewDiscardPile() {
         try {
             const res = await fetch(`/api/discard_pile?room_code=${this.state.roomCode}`);
@@ -490,45 +403,6 @@ const app = {
 
     closeDiscardModal() {
         this.elements.discardModal.classList.add('hidden');
-    },
-
-    sendChatMessage() {
-        const message = this.elements.chatInput.value.trim();
-        if (!message || !this.state.roomCode || !this.state.playerName) return;
-
-        this.socket.emit('chat_message', {
-            room_code: this.state.roomCode,
-            player_name: this.state.playerName,
-            message: message
-        });
-
-        this.elements.chatInput.value = '';
-    },
-
-    addChatMessage(data) {
-        const messagesContainer = this.elements.chatMessages;
-
-        // Remove empty state if present
-        const emptyState = messagesContainer.querySelector('.empty-state');
-        if (emptyState) {
-            emptyState.remove();
-        }
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'chat-message';
-        messageDiv.innerHTML = `
-            <span class="chat-player">${data.player}:</span>
-            <span class="chat-text">${data.text}</span>
-        `;
-
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        // Increment unread count if not on chat tab
-        if (this.state.activeTab !== 'chat') {
-            this.state.unreadMessages++;
-            this.updateChatTabLabel();
-        }
     }
 };
 

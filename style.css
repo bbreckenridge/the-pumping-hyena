@@ -876,3 +876,86 @@ input[type="text"]:focus {
     gap: 20px !important;
 }
 
+
+/* Player List & Shot Counters */
+.players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.player-item.active {
+    border-color: var(--primary-color);
+    background: #fff1f2;
+    box-shadow: 0 2px 4px rgba(225, 29, 72, 0.1);
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.player-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+.player-item.active .player-name {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.shot-counter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 4px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.shot-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #f3f4f6;
+    color: #4b5563;
+    font-weight: bold;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.shot-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.shot-value {
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+    color: var(--primary-color);
+}
+
