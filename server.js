@@ -265,6 +265,46 @@ app.post('/api/update_shots', (req, res) => {
     }
 });
 
+app.post('/api/kick_player', (req, res) => {
+    const { room_code, player_to_kick, requester } = req.body;
+    const game = games[room_code];
+
+    if (!game) return res.json({ success: false, message: 'Game not found' });
+
+    // Verify requester is host (first player)
+    if (game.players.length > 0 && game.players[0].name !== requester) {
+        return res.json({ success: false, message: 'Only the host can kick players' });
+    }
+
+    // Don't allow kicking yourself (though UI shouldn't show it)
+    if (player_to_kick === requester) {
+        return res.json({ success: false, message: 'Cannot kick yourself' });
+    }
+
+    // Remove player
+    const initialLength = game.players.length;
+    game.players = game.players.filter(p => p.name !== player_to_kick);
+
+    if (game.players.length < initialLength) {
+        // Also remove stats
+        delete game.stats[player_to_kick];
+
+        game.logs.push(`${player_to_kick} was kicked from the pack.`);
+        game.lastActivity = Date.now();
+
+        // Adjust current player index if needed
+        if (game.currentPlayerIndex >= game.players.length) {
+            game.currentPlayerIndex = 0;
+        }
+
+        io.to(room_code).emit('game_update', getGameState(room_code));
+        // Emit specific event to kicked player? (Socket disconnect handles cleanup usually, but we can force reload on client if name matches)
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: 'Player not found' });
+    }
+});
+
 // Socket.IO for real-time updates
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);

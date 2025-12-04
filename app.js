@@ -249,13 +249,23 @@ const app = {
 
         // Update Players with shot counters
         if (data.players && data.stats) {
+            const isHost = data.players.length > 0 && data.players[0].name === this.state.playerName;
+
             this.elements.playersContent.innerHTML = data.players.map((p, i) => {
                 const isCurrent = i === data.current_player_index;
                 const playerStats = data.stats[p.name] || { shots: 0 };
+                const isMe = p.name === this.state.playerName;
+
+                let kickBtn = '';
+                if (isHost && !isMe) {
+                    kickBtn = `<button class="kick-btn" onclick="app.kickPlayer('${p.name}')" title="Kick Player">✕</button>`;
+                }
+
                 return `
                     <div class="player-item ${isCurrent ? 'active' : ''}">
                         <div class="player-info">
                             <div class="player-name">${isCurrent ? '👉 ' : ''}${p.name}</div>
+                            ${kickBtn}
                         </div>
                         <div class="shot-counter">
                             <span style="font-size:0.8rem; color:#666; margin-right:4px;">🥃 Shots:</span>
@@ -327,6 +337,28 @@ const app = {
             });
         } catch (e) {
             console.error('Failed to update shots:', e);
+        }
+    },
+
+    async kickPlayer(playerToKick) {
+        if (!confirm(`Are you sure you want to kick ${playerToKick}?`)) return;
+
+        try {
+            const res = await fetch('/api/kick_player', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_code: this.state.roomCode,
+                    player_to_kick: playerToKick,
+                    requester: this.state.playerName
+                })
+            });
+            const data = await res.json();
+            if (!data.success) {
+                this.showAlert('Error', data.message || 'Failed to kick player.');
+            }
+        } catch (e) {
+            this.showAlert('Error', 'Network error.');
         }
     },
 
