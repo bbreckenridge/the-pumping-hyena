@@ -43,7 +43,7 @@
         <!-- Game Screen -->
         <div id="game-screen" class="screen">
             <header class="game-header">
-                <div class="room-info">Room: <span id="room-code-display">----</span></div>
+                <div class="room-info">Room: <span id="room-code-display" class="room-code-highlight">----</span></div>
                 <div id="current-turn" class="current-turn">Waiting...</div>
                 <button id="reset-btn" class="btn danger small">Reset</button>
             </header>
@@ -59,13 +59,15 @@
 
                 <!-- Center Table -->
                 <div id="table-center">
+                    <!-- Deck Pile -->
                     <div id="deck-area" class="card-pile">
+                        <h3 class="pile-label">Deck (<span id="deck-count">0</span>)</h3>
                         <div id="deck-visual" class="card-back-visual" title="Click to draw card"></div>
-                        <span class="pile-label">Deck (<span id="deck-count">0</span>)</span>
                     </div>
 
-                    <div id="last-card-area">
-                        <h3>Last Drawn</h3>
+                    <!-- Discard Pile -->
+                    <div id="last-card-area" class="card-pile">
+                        <h3 class="pile-label">Last Drawn</h3>
                         <div id="last-card-display" class="mini-card" style="cursor: pointer;"
                             title="Click to view discard pile">
                             <p>None</p>

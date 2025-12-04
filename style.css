@@ -572,3 +572,23 @@ input:focus {
     filter: grayscale(100%);
 }
 
+
+/* Consistent Pile Layout */
+.pile-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 8px 0;
+    text-align: center;
+}
+
+.room-code-highlight {
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
