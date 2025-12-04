@@ -96,7 +96,9 @@ app.post('/api/join_game', (req, res) => {
     }
 
     if (games[room_code]) {
-        if (!games[room_code].players.find(p => p.name === player_name)) {
+        const existingPlayer = games[room_code].players.find(p => p.name === player_name);
+
+        if (!existingPlayer) {
             games[room_code].players.push({
                 name: player_name,
                 id: generateId()
@@ -110,6 +112,11 @@ app.post('/api/join_game', (req, res) => {
             games[room_code].logs.push(`${player_name} joined the pack.`);
             games[room_code].lastActivity = Date.now();
             io.to(room_code).emit('game_update', getGameState(room_code));
+        } else {
+            // Reconnect: just update activity
+            games[room_code].lastActivity = Date.now();
+            // Optional: emit update to ensure client gets latest state immediately
+            // io.to(room_code).emit('game_update', getGameState(room_code)); 
         }
         res.json({ success: true });
     } else {

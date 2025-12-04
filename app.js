@@ -46,6 +46,22 @@ const app = {
     init() {
         this.initSocket();
         this.bindEvents();
+
+        // Check for existing session
+        const session = localStorage.getItem('hyena_session');
+        if (session) {
+            try {
+                const { roomCode, playerName } = JSON.parse(session);
+                if (roomCode && playerName) {
+                    this.state.roomCode = roomCode;
+                    this.state.playerName = playerName;
+                    this.joinGameRequest(roomCode, playerName);
+                }
+            } catch (e) {
+                console.error('Invalid session');
+                localStorage.removeItem('hyena_session');
+            }
+        }
     },
 
     initSocket() {
@@ -53,10 +69,6 @@ const app = {
 
         this.socket.on('game_update', (data) => {
             this.updateUI(data);
-        });
-
-        this.socket.on('chat_message', (data) => {
-            this.addChatMessage(data);
         });
     },
 
@@ -170,6 +182,11 @@ const app = {
             const data = await res.json();
 
             if (data.success) {
+                // Save session
+                localStorage.setItem('hyena_session', JSON.stringify({
+                    roomCode: roomCode,
+                    playerName: playerName
+                }));
                 this.enterGame();
             } else {
                 this.showAlert('Error', data.message || 'Failed to join.');
