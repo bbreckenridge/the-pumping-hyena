@@ -42,8 +42,8 @@ app.use(express.json());
 
 // API Endpoints
 app.post('/api/create_game', (req, res) => {
-    // Generate safe room code (no I, 1, O, 0)
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    // Generate safe room code (no I, 1, O, 0, 8, B)
+    const chars = 'ACDEFGHJKLMNPQRSTUVWXYZ2345679';
     let roomCode = '';
     for (let i = 0; i < 6; i++) {
         roomCode += chars.charAt(Math.floor(Math.random() * chars.length));

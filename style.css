@@ -679,3 +679,65 @@ input[type="text"]:focus {
     }
 }
 
+
+/* Compact Lobby Layout */
+.lobby-content {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+.btn.large {
+    padding: 15px;
+    font-size: 1.1rem;
+}
+
+.join-container {
+    text-align: left;
+}
+
+.join-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.join-row {
+    display: flex;
+    gap: 10px;
+}
+
+.join-row input {
+    flex: 2;
+}
+
+.join-row button {
+    flex: 1;
+}
+
+@media (max-width: 480px) {
+    .hyena-logo img {
+        max-width: 180px; /* Smaller logo on mobile */
+    }
+    .logo-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+
+/* Maximize Cards on Mobile */
+.card-back-visual, .mini-card {
+    width: 42vw; /* Fits side-by-side with padding */
+    max-width: 220px;
+    height: auto;
+    aspect-ratio: 5/3.5; /* Slightly taller for better fit */
+}
+
+#table-center {
+    justify-content: space-around;
+    padding: 10px;
+}
+
