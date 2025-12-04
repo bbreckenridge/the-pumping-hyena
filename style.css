@@ -603,3 +603,79 @@ input[type="text"]:focus {
     font-size: 1.1rem;
     line-height: 1.5;
 }
+/* New Lobby Layout */
+.lobby-content {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.name-input-group {
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.lobby-actions {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.action-card {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #E5E7EB;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-card h3 {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.action-card p {
+    font-size: 0.9rem;
+    color: #6B7280;
+    margin-bottom: 10px;
+    flex: 1;
+}
+
+.join-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.divider-vertical {
+    display: flex;
+    align-items: center;
+    color: #9CA3AF;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+    .lobby-actions {
+        flex-direction: column;
+    }
+    
+    .divider-vertical {
+        width: 100%;
+        justify-content: center;
+        margin: 10px 0;
+    }
+    
+    .divider-vertical::before,
+    .divider-vertical::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #E5E7EB;
+        margin: 0 10px;
+    }
+}
+

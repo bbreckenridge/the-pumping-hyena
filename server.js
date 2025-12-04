@@ -42,7 +42,20 @@ app.use(express.json());
 
 // API Endpoints
 app.post('/api/create_game', (req, res) => {
-    const roomCode = crypto.randomBytes(3).toString('hex').toUpperCase();
+    // Generate safe room code (no I, 1, O, 0)
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let roomCode = '';
+    for (let i = 0; i < 6; i++) {
+        roomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Ensure uniqueness (though collision is unlikely)
+    while (games[roomCode]) {
+        roomCode = '';
+        for (let i = 0; i < 6; i++) {
+            roomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+    }
     games[roomCode] = {
         players: [],
         deck: generateDeck(),
