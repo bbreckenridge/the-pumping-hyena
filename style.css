@@ -592,3 +592,9 @@ input:focus {
     border-radius: 4px;
 }
 
+
+/* Mobile Chat Scroll Fix */
+#info-section {
+    min-height: 400px !important;
+}
+
