@@ -754,3 +754,36 @@ input[type="text"]:focus {
     padding: 12px 20px;
 }
 
+
+/* 3D Card Flip Animation */
+@keyframes flipIn {
+    0% {
+        transform: perspective(1000px) rotateY(90deg) scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: perspective(1000px) rotateY(-10deg) scale(1.05);
+    }
+    100% {
+        transform: perspective(1000px) rotateY(0deg) scale(1);
+        opacity: 1;
+    }
+}
+
+.card-face {
+    animation: flipIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+/* Deck Click Animation */
+@keyframes deckPop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.card-back-visual:not(.disabled):hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
