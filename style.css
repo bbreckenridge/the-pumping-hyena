@@ -18,8 +18,9 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    /* Changed from height: 100vh */
+    /* overflow: hidden; Removed to allow natural scrolling */
     display: flex;
     justify-content: center;
 }
@@ -27,7 +28,8 @@ body {
 #app {
     width: 100%;
     max-width: 600px;
-    height: 100%;
+    min-height: 100vh;
+    /* Changed from height: 100% */
     position: relative;
     background: #FFFBEB;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -99,29 +101,44 @@ body {
     width: 100%;
 }
 
-input {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #E5E7EB;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    outline: none;
-    transition: border-color 0.3s;
+.input-group label {
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--secondary-color);
 }
 
-input:focus {
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
     border-color: var(--primary-color);
+    outline: none;
+}
+
+.actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .btn {
-    width: 100%;
-    padding: 15px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
+    border-radius: 8px;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.1s, opacity 0.2s;
+    width: 100%;
 }
 
 .btn:active {
@@ -129,24 +146,36 @@ input:focus {
 }
 
 .btn.primary {
-    background-color: var(--primary-color);
+    background: var(--primary-color);
     color: white;
+    box-shadow: 0 4px 0 #B45309;
+}
+
+.btn.primary:active {
+    box-shadow: 0 0 0 #B45309;
+    transform: translateY(4px);
 }
 
 .btn.secondary {
-    background-color: var(--secondary-color);
+    background: var(--secondary-color);
     color: white;
+    box-shadow: 0 4px 0 #1A2E05;
+}
+
+.btn.secondary:active {
+    box-shadow: 0 0 0 #1A2E05;
+    transform: translateY(4px);
 }
 
 .btn.danger {
-    background-color: var(--danger-color);
+    background: var(--danger-color);
     color: white;
 }
 
 .btn.small {
+    padding: 6px 12px;
+    font-size: 0.8rem;
     width: auto;
-    padding: 8px 16px;
-    font-size: 0.9rem;
 }
 
 .divider {
@@ -200,7 +229,7 @@ input:focus {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow-y: auto;
+    /* overflow-y: auto; Removed to allow natural scrolling */
 }
 
 /* Timers Section */
@@ -264,6 +293,18 @@ input:focus {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: 4px solid white;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.card-back-visual:active {
+    transform: scale(0.95);
+}
+
+.card-back-visual.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(100%);
 }
 
 .mini-card {
@@ -307,6 +348,8 @@ input:focus {
     flex-direction: column;
     overflow: hidden;
     border: 1px solid #E5E7EB;
+    min-height: 400px;
+    /* Ensure enough space for chat on mobile */
 }
 
 .tabs {
@@ -344,7 +387,21 @@ input:focus {
     font-size: 0.9rem;
     margin-bottom: 5px;
     padding-bottom: 5px;
-    border-bottom: 1px solid #F3F4F6;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+.player-item.active {
+    border: 2px solid var(--primary-color);
+    background: #FFFBEB;
 }
 
 /* Modal */
@@ -402,11 +459,13 @@ input:focus {
     font-size: 1.5rem;
     color: var(--primary-color);
     margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
 .card-face p {
     font-size: 1.1rem;
     line-height: 1.4;
+    color: #4B5563;
 }
 
 .timer-badge {
@@ -415,42 +474,27 @@ input:focus {
     color: white;
     padding: 5px 10px;
     border-radius: 20px;
-    font-weight: bold;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 @keyframes popIn {
     from {
-        opacity: 0;
         transform: scale(0.8);
+        opacity: 0;
     }
 
     to {
-        opacity: 1;
         transform: scale(1);
+        opacity: 1;
     }
 }
 
-/* Mobile fix for lobby scrolling */
-#lobby-screen {
-    overflow-y: auto !important;
-    justify-content: flex-start !important;
-}
-
-.logo-container {
-    padding-top: 1rem;
-}
-
-.hyena-logo img {
-    max-width: 200px !important;
-}
-
-.input-group {
-    margin: 1rem 0 !important;
-}
-
-.logo-container h1 {
-    font-size: 2rem !important;
-    margin-bottom: 1rem !important;
+@media (max-width: 480px) {
+    .logo-container h1 {
+        font-size: 2rem !important;
+        margin-bottom: 1rem !important;
+    }
 }
 
 /* Alert Modal */
@@ -486,7 +530,8 @@ input:focus {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 300px;
+    max-height: none !important;
+    /* Mobile fix */
 }
 
 .chat-message {
@@ -550,28 +595,6 @@ input:focus {
     background: red;
     border-radius: 50%;
 }
-/* Mobile Chat Fix */
-.chat-messages {
-    max-height: none !important;
-}
-
-
-/* Deck Visual Interactive Styles */
-.card-back-visual {
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
-}
-
-.card-back-visual:active {
-    transform: scale(0.95);
-}
-
-.card-back-visual.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    filter: grayscale(100%);
-}
-
 
 /* Consistent Pile Layout */
 .pile-label {
@@ -587,14 +610,7 @@ input:focus {
     font-size: 1.2rem;
     color: var(--primary-color);
     letter-spacing: 1px;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     padding: 2px 6px;
     border-radius: 4px;
 }
-
-
-/* Mobile Chat Scroll Fix */
-#info-section {
-    min-height: 400px !important;
-}
-
