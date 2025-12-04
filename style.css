@@ -555,3 +555,20 @@ input:focus {
     max-height: none !important;
 }
 
+
+/* Deck Visual Interactive Styles */
+.card-back-visual {
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.card-back-visual:active {
+    transform: scale(0.95);
+}
+
+.card-back-visual.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+

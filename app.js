@@ -23,7 +23,7 @@ const app = {
         playersContent: document.getElementById('players-content'),
         deckCount: document.getElementById('deck-count'),
         lastCardDisplay: document.getElementById('last-card-display'),
-        drawBtn: document.getElementById('draw-btn'),
+        deckVisual: document.getElementById('deck-visual'),
         resetBtn: document.getElementById('reset-btn'),
 
         // Modal
@@ -75,7 +75,7 @@ const app = {
     bindEvents() {
         this.elements.createBtn.addEventListener('click', () => this.createGame());
         this.elements.joinBtn.addEventListener('click', () => this.joinGame());
-        this.elements.drawBtn.addEventListener('click', () => this.drawCard());
+        this.elements.deckVisual.addEventListener('click', () => this.drawCard());
         this.elements.resetBtn.addEventListener('click', () => this.resetGame());
         this.elements.modalCloseBtn.addEventListener('click', () => this.closeModal());
         this.elements.lastCardDisplay.addEventListener('click', () => this.viewDiscardPile());
@@ -197,15 +197,13 @@ const app = {
             this.elements.currentTurn.style.background = isMyTurn ? 'rgba(217, 119, 6, 0.3)' : 'rgba(217, 119, 6, 0.1)';
             this.elements.currentTurn.style.fontWeight = isMyTurn ? '900' : '700';
 
-            // Enable/disable draw button based on turn
+            // Enable/disable deck based on turn
             if (isMyTurn) {
-                this.elements.drawBtn.disabled = false;
-                this.elements.drawBtn.style.opacity = '1';
-                this.elements.drawBtn.style.cursor = 'pointer';
+                this.elements.deckVisual.classList.remove('disabled');
+                this.elements.deckVisual.title = "Click to draw card";
             } else {
-                this.elements.drawBtn.disabled = true;
-                this.elements.drawBtn.style.opacity = '0.5';
-                this.elements.drawBtn.style.cursor = 'not-allowed';
+                this.elements.deckVisual.classList.add('disabled');
+                this.elements.deckVisual.title = "Wait for your turn";
             }
         }
 
@@ -259,6 +257,8 @@ const app = {
     },
 
     async drawCard() {
+        if (this.elements.deckVisual.classList.contains('disabled')) return;
+
         try {
             const res = await fetch('/api/draw_card', {
                 method: 'POST',
