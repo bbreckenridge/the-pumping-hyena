@@ -4,7 +4,8 @@ const app = {
         playerName: null,
         currentPlayer: null,
         unreadMessages: 0,
-        activeTab: 'players'
+        activeTab: 'players',
+        timerCount: 0
     },
 
     socket: null,
@@ -104,6 +105,50 @@ const app = {
         this.socket.on('chat_message', (data) => {
             this.addChatMessage(data);
         });
+    },
+
+    // Sound Effects using Web Audio API
+    playSound(type) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'draw') {
+                // Card draw: Quick ascending whoosh
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } else if (type === 'timer') {
+                // Timer: Double beep
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+
+                // Second beep
+                setTimeout(() => {
+                    const osc2 = audioContext.createOscillator();
+                    const gain2 = audioContext.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContext.destination);
+                    osc2.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    gain2.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    osc2.start(audioContext.currentTime);
+                    osc2.stop(audioContext.currentTime + 0.1);
+                }, 100);
+            }
+        } catch (e) {
+            console.log('Sound not supported');
+        }
     },
 
     async createGame() {
@@ -234,6 +279,12 @@ const app = {
     },
 
     renderTimers(timers) {
+        // Play sound if new timer was added
+        if (timers.length > this.state.timerCount && timers.length > 0) {
+            this.playSound('timer');
+        }
+        this.state.timerCount = timers.length;
+
         if (timers.length === 0) {
             this.elements.timersList.innerHTML = '<div class="empty-state" style="text-align:center; color:#999; font-size:0.9rem;">No active timers</div>';
             return;
@@ -275,6 +326,7 @@ const app = {
             const data = await res.json();
 
             if (data.success) {
+                this.playSound('draw');
                 this.showCardModal(data.card);
             } else {
                 this.showAlert('Info', data.message || 'Could not draw card');

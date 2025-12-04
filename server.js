@@ -340,8 +340,39 @@ function generateDeck() {
         { title: "Reverse", text: "Turn order reverses! (Next player goes backwards)", timer_duration: null },
     ];
 
+    // Group Challenge Cards (affect multiple players)
+    const groupCards = [
+        { title: "Group Huddle", text: "Everyone must touch elbows in the center for 10 seconds. First to break loses!", timer_duration: 10 },
+        { title: "Simon Says", text: "You're Simon! Give 3 commands. Anyone who messes up takes a shot!", timer_duration: 30 },
+        { title: "Hot Potato", text: "Pass an object around. When timer ends, whoever holds it takes a shot!", timer_duration: 15 },
+        { title: "Copycat", text: "Do an action. Everyone must copy you for 10 seconds. Fail = shot!", timer_duration: 10 },
+        { title: "Team Chant", text: "Everyone creates a team chant together in 30 seconds. Can't agree = everyone drinks!", timer_duration: 30 },
+        { title: "Group Vote", text: "Everyone votes on who should take the next shot. Majority rules!", timer_duration: null },
+        { title: "Circle of Trust", text: "Everyone shares one secret. Refuse = take 2 shots!", timer_duration: null },
+    ];
+
+    // Wild Cards (player choice)
+    const wildCards = [
+        { title: "Wild Card", text: "Choose any player to take a shot, OR take one yourself and choose 2 others!", timer_duration: null },
+        { title: "Dealer's Choice", text: "Pick any previous card effect to repeat on any player!", timer_duration: null },
+        { title: "Double or Nothing", text: "Flip a coin. Heads = give 2 shots. Tails = take 2 shots!", timer_duration: null },
+        { title: "Trade Places", text: "Swap seats with any player. Both of you take a shot!", timer_duration: null },
+        { title: "Time Warp", text: "Choose: Skip your next turn, OR take a shot now and go again!", timer_duration: null },
+    ];
+
+    // Bonus/Penalty Cards
+    const bonusPenaltyCards = [
+        { title: "Lucky Break", text: "You're immune from the next card that targets you!", timer_duration: null },
+        { title: "Double Trouble", text: "Your next shot counts as 2! (Or skip it and take 3 now)", timer_duration: null },
+        { title: "Shield", text: "Block the next shot someone tries to give you!", timer_duration: null },
+        { title: "Karma", text: "The last person who gave you a shot must take one now!", timer_duration: null },
+        { title: "Boomerang", text: "Any shot you give in the next minute comes back to you too!", timer_duration: 60 },
+        { title: "Speed Round", text: "Next 3 players must draw immediately. No breaks!", timer_duration: null },
+        { title: "Freeze", text: "Pick a player. They can't draw for 2 rounds!", timer_duration: null },
+    ];
+
     // Combine all cards
-    const allCards = [...interactiveCards, ...partyCards];
+    const allCards = [...interactiveCards, ...partyCards, ...groupCards, ...wildCards, ...bonusPenaltyCards];
 
     // Create deck with duplicates for variety
     const deck = [...allCards, ...allCards, ...partyCards];
