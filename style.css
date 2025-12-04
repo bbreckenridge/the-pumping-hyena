@@ -741,3 +741,16 @@ input[type="text"]:focus {
     padding: 10px;
 }
 
+
+/* Fix Lobby Input Sizing */
+.join-row input {
+    flex: 1 1 auto;
+    min-width: 120px;
+}
+
+.join-row button {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 12px 20px;
+}
+

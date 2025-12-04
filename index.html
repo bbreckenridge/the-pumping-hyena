@@ -82,14 +82,11 @@
                 <!-- Logs/Players/Chat -->
                 <div id="info-section">
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="logs">Logs</button>
-                        <button class="tab-btn" data-tab="players">Players</button>
+                        <button class="tab-btn active" data-tab="players">Players</button>
                         <button class="tab-btn" data-tab="chat">Chat</button>
+                        <button class="tab-btn" data-tab="logs">Logs</button>
                     </div>
-                    <div id="logs-content" class="tab-content active">
-                        <!-- Logs here -->
-                    </div>
-                    <div id="players-content" class="tab-content">
+                    <div id="players-content" class="tab-content active">
                         <!-- Players list here -->
                     </div>
                     <div id="chat-content" class="tab-content">
@@ -100,6 +97,9 @@
                             <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200">
                             <button id="send-chat-btn" class="btn primary small">Send</button>
                         </div>
+                    </div>
+                    <div id="logs-content" class="tab-content">
+                        <!-- Logs here -->
                     </div>
                 </div>
             </div>

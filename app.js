@@ -4,7 +4,7 @@ const app = {
         playerName: null,
         currentPlayer: null,
         unreadMessages: 0,
-        activeTab: 'logs'
+        activeTab: 'players'
     },
 
     socket: null,
