@@ -33,6 +33,14 @@ const apiLimiter = rateLimit({
 
 app.use('/api/', apiLimiter);
 
+// Stricter limit for creating games
+const createGameLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // limit each IP to 10 created games per hour
+    message: 'Too many games created from this IP, please try again later.'
+});
+app.use('/api/create_game', createGameLimiter);
+
 // Game State
 const games = {};
 
@@ -91,7 +99,12 @@ app.post('/api/join_game', (req, res) => {
         return res.json({ success: false, message: 'Player name too long (max 20 characters)' });
     }
 
-    // Validate room code format
+    // Validate room code format (alphanumeric only)
+    if (!validator.isAlphanumeric(room_code)) {
+        return res.json({ success: false, message: 'Invalid room code format.' });
+    }
+
+    // Validate room code length
     if (!room_code || room_code.length !== 6) {
         return res.json({ success: false, message: 'Invalid room code. Room codes are 6 characters.' });
     }
@@ -127,6 +140,11 @@ app.post('/api/join_game', (req, res) => {
 
 app.get('/api/game_state', (req, res) => {
     const roomCode = req.query.room_code;
+
+    if (!roomCode || !validator.isAlphanumeric(roomCode)) {
+        return res.status(400).json({ error: 'Invalid room code' });
+    }
+
     if (games[roomCode]) {
         res.json(getGameState(roomCode));
     } else {
@@ -490,10 +508,10 @@ function getLocalIP() {
     return 'localhost';
 }
 
-// Clean up inactive games (runs every hour)
+// Clean up inactive games (runs every 30 minutes)
 setInterval(() => {
     const now = Date.now();
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    const maxAge = 2 * 60 * 60 * 1000; // 2 hours
 
     for (const [code, game] of Object.entries(games)) {
         if (game.lastActivity && now - game.lastActivity > maxAge) {
@@ -501,7 +519,7 @@ setInterval(() => {
             console.log(`🧹 Cleaned up inactive game: ${code}`);
         }
     }
-}, 60 * 60 * 1000); // Run every hour
+}, 30 * 60 * 1000); // Run every 30 minutes
 
 // Start server on all network interfaces (0.0.0.0)
 server.listen(PORT, '0.0.0.0', () => {
