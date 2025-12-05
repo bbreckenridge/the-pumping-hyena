@@ -3,6 +3,7 @@ const app = {
         roomCode: null,
         playerName: null,
         currentPlayer: null,
+        lastCurrentPlayer: null,
         timerCount: 0
     },
 
@@ -17,6 +18,7 @@ const app = {
         joinBtn: document.getElementById('join-btn'),
         roomCodeDisplay: document.getElementById('room-code-display'),
         currentTurn: document.getElementById('current-turn'),
+        upNext: document.getElementById('up-next'),
         timersList: document.getElementById('timers-list'),
         playersContent: document.getElementById('players-content'),
         deckCount: document.getElementById('deck-count'),
@@ -149,6 +151,12 @@ const app = {
         }
     },
 
+    vibrate(pattern) {
+        if (navigator.vibrate) {
+            navigator.vibrate(pattern);
+        }
+    },
+
     async createGame() {
         const name = this.elements.playerNameInput.value.trim();
         if (!name) return this.showAlert('Error', 'Please enter your name.');
@@ -210,8 +218,11 @@ const app = {
         this.elements.gameScreen.classList.add('active');
         this.elements.roomCodeDisplay.textContent = this.state.roomCode;
 
-        // Join Socket.IO room
-        this.socket.emit('join_room', this.state.roomCode);
+        // Join Socket.IO room with validation
+        this.socket.emit('join_room', {
+            roomCode: this.state.roomCode,
+            playerName: this.state.playerName
+        });
 
         // Start polling
         this.pollInterval = setInterval(() => this.fetchGameState(), 1000);
@@ -266,12 +277,28 @@ const app = {
         }
 
         // Update current turn indicator
-        this.state.currentPlayer = data.current_player;
+        // Update current turn indicator
         if (data.current_player) {
             const isMyTurn = data.current_player === this.state.playerName;
+
+            // Haptic Feedback for turn
+            if (isMyTurn && this.state.currentPlayer !== data.current_player) {
+                this.vibrate([200, 100, 200]); // Distinct pattern for your turn
+            }
+            this.state.currentPlayer = data.current_player;
+
             this.elements.currentTurn.textContent = isMyTurn ? '🎯 YOUR TURN!' : `${data.current_player}'s turn`;
             this.elements.currentTurn.style.background = isMyTurn ? 'rgba(217, 119, 6, 0.3)' : 'rgba(217, 119, 6, 0.1)';
             this.elements.currentTurn.style.fontWeight = isMyTurn ? '900' : '700';
+
+            // Up Next
+            if (data.players && data.players.length > 0) {
+                const nextIndex = (data.current_player_index + 1) % data.players.length;
+                const nextPlayer = data.players[nextIndex]?.name;
+                if (nextPlayer) {
+                    this.elements.upNext.textContent = `Up Next: ${nextPlayer}`;
+                }
+            }
 
             // Enable/disable deck based on turn
             if (isMyTurn) {
@@ -504,6 +531,20 @@ const app = {
 
     closeDiscardModal() {
         this.elements.discardModal.classList.add('hidden');
+    },
+
+    async requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                this.wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock active');
+                this.wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock released');
+                });
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
     }
 };
 
