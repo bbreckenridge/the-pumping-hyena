@@ -980,3 +980,14 @@ input[type="text"]:focus {
     opacity: 1;
 }
 
+
+/* Game Over Stats */
+#game-over-stats {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f9fafb;
+}
+

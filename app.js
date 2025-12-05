@@ -40,7 +40,13 @@ const app = {
         alertOverlay: document.getElementById('alert-overlay'),
         alertTitle: document.getElementById('alert-title'),
         alertMessage: document.getElementById('alert-message'),
-        alertOk: document.getElementById('alert-ok')
+        alertOk: document.getElementById('alert-ok'),
+
+        // Game Over
+        gameOverModal: document.getElementById('game-over-modal'),
+        gameOverStats: document.getElementById('game-over-stats'),
+        playAgainBtn: document.getElementById('play-again-btn'),
+        endGameBtn: document.getElementById('end-game-btn')
     },
 
     init() {
@@ -86,6 +92,9 @@ const app = {
         this.elements.roomCodeInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.toUpperCase();
         });
+
+        this.elements.endGameBtn.addEventListener('click', () => this.endGame());
+        this.elements.playAgainBtn.addEventListener('click', () => this.resetGame());
     },
 
     setupSocket() {
@@ -228,6 +237,34 @@ const app = {
     },
 
     updateUI(data) {
+        // Show/Hide End Game Button (Host only)
+        const isHost = data.players.length > 0 && data.players[0].name === this.state.playerName;
+        if (isHost) {
+            this.elements.endGameBtn.style.display = 'block';
+        } else {
+            this.elements.endGameBtn.style.display = 'none';
+        }
+
+        // Handle Game Over
+        if (data.game_over) {
+            this.elements.gameOverModal.classList.remove('hidden');
+            // Render stats
+            if (data.stats) {
+                const sortedStats = Object.entries(data.stats)
+                    .map(([name, s]) => ({ name, ...s }))
+                    .sort((a, b) => b.shots - a.shots); // Sort by shots descending
+
+                this.elements.gameOverStats.innerHTML = sortedStats.map((p, i) => `
+                    <div class="stat-row" style="justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
+                        <div style="font-weight:bold;">${i + 1}. ${p.name}</div>
+                        <div style="color:var(--primary-color); font-weight:bold;">${p.shots} 🥃</div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            this.elements.gameOverModal.classList.add('hidden');
+        }
+
         // Update current turn indicator
         this.state.currentPlayer = data.current_player;
         if (data.current_player) {
@@ -395,6 +432,15 @@ const app = {
     async resetGame() {
         if (!confirm('Are you sure you want to reset the game?')) return;
         await fetch('/api/reset_game', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ room_code: this.state.roomCode })
+        });
+    },
+
+    async endGame() {
+        if (!confirm('Are you sure you want to end the game?')) return;
+        await fetch('/api/end_game', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ room_code: this.state.roomCode })

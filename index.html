@@ -49,7 +49,10 @@
             <header class="game-header">
                 <div class="room-info">Room: <span id="room-code-display" class="room-code-highlight">----</span></div>
                 <div id="current-turn" class="current-turn">Waiting...</div>
-                <button id="reset-btn" class="btn danger small">Reset</button>
+                <div class="header-actions" style="display:flex; gap:10px;">
+                    <button id="end-game-btn" class="btn secondary small" style="display:none;">End Game</button>
+                    <button id="reset-btn" class="btn danger small">Reset</button>
+                </div>
             </header>
 
             <div id="game-layout">
@@ -110,6 +113,19 @@
                 <!-- Discard cards will be listed here -->
             </div>
             <button id="discard-close-btn" class="btn secondary" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="overlay hidden">
+        <div class="modal-content" style="text-align:center;">
+            <h2 style="color:var(--primary-color); margin-bottom:1rem;">🏆 Game Over!</h2>
+            <div id="game-over-stats" style="margin-bottom:1.5rem;">
+                <!-- Stats will be injected here -->
+            </div>
+            <div class="modal-actions" style="display:flex; gap:10px; justify-content:center;">
+                <button id="play-again-btn" class="btn primary large">Play Again</button>
+            </div>
         </div>
     </div>
 

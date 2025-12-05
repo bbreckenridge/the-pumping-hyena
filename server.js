@@ -65,7 +65,8 @@ app.post('/api/create_game', (req, res) => {
         lastCard: null,
         currentPlayerIndex: 0,
         lastActivity: Date.now(),
-        stats: {} // Player stats: { playerName: { cardsDrawn, shots, timersCompleted } }
+        stats: {}, // Player stats: { playerName: { cardsDrawn, shots, timersCompleted } }
+        gameOver: false
     };
     console.log(`Created game: ${roomCode}`);
     res.json({ room_code: roomCode });
@@ -224,6 +225,14 @@ app.post('/api/reset_game', (req, res) => {
         games[room_code].timers = [];
         games[room_code].logs.push('Game reset!');
         games[room_code].lastCard = null;
+        games[room_code].gameOver = false;
+        // Optionally reset stats? For now, keep them or maybe reset them too?
+        // Let's reset stats for a fresh game
+        Object.keys(games[room_code].stats).forEach(player => {
+            games[room_code].stats[player].cardsDrawn = 0;
+            games[room_code].stats[player].shots = 0;
+            games[room_code].stats[player].timersCompleted = 0;
+        });
         io.to(room_code).emit('game_update', getGameState(room_code));
         res.json({ success: true });
     }
@@ -305,6 +314,18 @@ app.post('/api/kick_player', (req, res) => {
     }
 });
 
+app.post('/api/end_game', (req, res) => {
+    const { room_code } = req.body;
+    if (games[room_code]) {
+        games[room_code].gameOver = true;
+        games[room_code].lastActivity = Date.now();
+        io.to(room_code).emit('game_update', getGameState(room_code));
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
+});
+
 // Socket.IO for real-time updates
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
@@ -355,7 +376,8 @@ function getGameState(roomCode) {
         last_card: game.lastCard,
         current_player: game.players[game.currentPlayerIndex]?.name || null,
         current_player_index: game.currentPlayerIndex,
-        stats: game.stats
+        stats: game.stats,
+        game_over: game.gameOver
     };
 }
 
