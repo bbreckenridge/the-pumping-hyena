@@ -325,7 +325,7 @@ app.post('/api/kick_player', (req, res) => {
         }
 
         io.to(room_code).emit('game_update', getGameState(room_code));
-        // Emit specific event to kicked player? (Socket disconnect handles cleanup usually, but we can force reload on client if name matches)
+        io.to(room_code).emit('player_kicked', { player: player_to_kick });
         res.json({ success: true });
     } else {
         res.json({ success: false, message: 'Player not found' });
@@ -348,9 +348,24 @@ app.post('/api/end_game', (req, res) => {
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
-    socket.on('join_room', (roomCode) => {
-        socket.join(roomCode);
-        console.log(`Socket ${socket.id} joined room ${roomCode}`);
+    socket.on('join_room', (data) => {
+        // Handle both old format (string) and new format (object) for backward compatibility during transition
+        const roomCode = typeof data === 'object' ? data.roomCode : data;
+        const playerName = typeof data === 'object' ? data.playerName : null;
+
+        if (games[roomCode]) {
+            // If playerName provided, verify they are in the game
+            if (playerName) {
+                const playerExists = games[roomCode].players.find(p => p.name === playerName);
+                if (!playerExists) {
+                    socket.emit('error', 'Player not found in this game');
+                    return;
+                }
+            }
+
+            socket.join(roomCode);
+            console.log(`Socket ${socket.id} joined room ${roomCode}`);
+        }
     });
 
     socket.on('disconnect', () => {

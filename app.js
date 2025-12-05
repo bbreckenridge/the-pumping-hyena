@@ -18,12 +18,15 @@ const app = {
         joinBtn: document.getElementById('join-btn'),
         roomCodeDisplay: document.getElementById('room-code-display'),
         currentTurn: document.getElementById('current-turn'),
-        upNext: document.getElementById('up-next'),
         timersList: document.getElementById('timers-list'),
         playersContent: document.getElementById('players-content'),
         deckCount: document.getElementById('deck-count'),
         lastCardDisplay: document.getElementById('last-card-display'),
         deckVisual: document.getElementById('deck-visual'),
+
+        // Menu
+        menuBtn: document.getElementById('menu-btn'),
+        menuDropdown: document.getElementById('menu-dropdown'),
         resetBtn: document.getElementById('reset-btn'),
 
         // Modal
@@ -48,6 +51,7 @@ const app = {
         gameOverModal: document.getElementById('game-over-modal'),
         gameOverStats: document.getElementById('game-over-stats'),
         playAgainBtn: document.getElementById('play-again-btn'),
+        backToLobbyBtn: document.getElementById('back-to-lobby-btn'),
         endGameBtn: document.getElementById('end-game-btn')
     },
 
@@ -78,12 +82,32 @@ const app = {
         this.socket.on('game_update', (data) => {
             this.updateUI(data);
         });
+
+        this.socket.on('player_kicked', (data) => {
+            if (data.player === this.state.playerName) {
+                this.showAlert('Kicked', 'You have been kicked from the game.');
+                localStorage.removeItem('hyena_session');
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        });
     },
 
     bindEvents() {
         this.elements.createBtn.addEventListener('click', () => this.createGame());
         this.elements.joinBtn.addEventListener('click', () => this.joinGame());
         this.elements.deckVisual.addEventListener('click', () => this.drawCard());
+
+        // Menu Toggle
+        this.elements.menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.elements.menuDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', () => {
+            this.elements.menuDropdown.classList.add('hidden');
+        });
+
         this.elements.resetBtn.addEventListener('click', () => this.resetGame());
         this.elements.modalCloseBtn.addEventListener('click', () => this.closeModal());
         this.elements.lastCardDisplay.addEventListener('click', () => this.viewDiscardPile());
@@ -97,6 +121,10 @@ const app = {
 
         this.elements.endGameBtn.addEventListener('click', () => this.endGame());
         this.elements.playAgainBtn.addEventListener('click', () => this.resetGame());
+        this.elements.backToLobbyBtn.addEventListener('click', () => {
+            localStorage.removeItem('hyena_session');
+            location.reload();
+        });
     },
 
     setupSocket() {
@@ -287,17 +315,22 @@ const app = {
             }
             this.state.currentPlayer = data.current_player;
 
-            this.elements.currentTurn.textContent = isMyTurn ? '🎯 YOUR TURN!' : `${data.current_player}'s turn`;
-            this.elements.currentTurn.style.background = isMyTurn ? 'rgba(217, 119, 6, 0.3)' : 'rgba(217, 119, 6, 0.1)';
-            this.elements.currentTurn.style.fontWeight = isMyTurn ? '900' : '700';
+            // Check if I am next
+            const nextIndex = (data.current_player_index + 1) % data.players.length;
+            const amINext = data.players[nextIndex]?.name === this.state.playerName;
 
-            // Up Next
-            if (data.players && data.players.length > 0) {
-                const nextIndex = (data.current_player_index + 1) % data.players.length;
-                const nextPlayer = data.players[nextIndex]?.name;
-                if (nextPlayer) {
-                    this.elements.upNext.textContent = `Up Next: ${nextPlayer}`;
-                }
+            if (isMyTurn) {
+                this.elements.currentTurn.textContent = '🎯 YOUR TURN!';
+                this.elements.currentTurn.style.background = 'rgba(217, 119, 6, 0.3)';
+                this.elements.currentTurn.style.fontWeight = '900';
+            } else if (amINext) {
+                this.elements.currentTurn.textContent = `👉 YOU'RE NEXT! (${data.current_player}'s turn)`;
+                this.elements.currentTurn.style.background = 'rgba(217, 119, 6, 0.15)'; // Slightly highlighted
+                this.elements.currentTurn.style.fontWeight = '700';
+            } else {
+                this.elements.currentTurn.textContent = `${data.current_player}'s turn`;
+                this.elements.currentTurn.style.background = 'rgba(217, 119, 6, 0.1)';
+                this.elements.currentTurn.style.fontWeight = '700';
             }
 
             // Enable/disable deck based on turn
