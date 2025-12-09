@@ -774,54 +774,54 @@ const app = {
     // Drink Recipes Data
     recipes: [
         {
-            id: 'cucumber_melon',
-            title: 'Cucumber Melon Spritz',
-            description: 'A refreshing green shot.',
-            ingredients: ['1 part Cucumber Vodka', '1 part Watermelon Liqueur', 'Splash of Soda Water'],
-            pitcher: 'For 1 Quart: Mix 1.5 cups Cucumber Vodka, 1.5 cups Watermelon Liqueur, and top with Soda Water. Add ice and cucumber slices.',
-            color: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)',
-            icon: '🥒',
-            tags: ['Refreshing', 'Light']
-        },
-        {
-            id: 'pineapple_coconut',
-            title: 'Pineapple Coconut Cooler',
-            description: 'Tropical sweetness.',
-            ingredients: ['1 part Coconut Rum', '1 part Pineapple Juice', 'Splash of Lime Juice'],
-            pitcher: 'For 1 Quart: Mix 2 cups Coconut Rum, 2 cups Pineapple Juice, and 1/4 cup Lime Juice. Shake well and serve over ice.',
-            color: 'linear-gradient(135deg, #fce38a 0%, #f38181 100%)',
-            icon: '🥥',
-            tags: ['Sweet', 'Tropical']
-        },
-        {
-            id: 'berry_lemonade',
-            title: 'Berry Lemonade Splash',
-            description: 'Sweet and tart goodness.',
-            ingredients: ['1 part Berry Vodka', '1 part Lemonade', 'Splash of Cranberry Juice'],
-            pitcher: 'For 1 Quart: Mix 1.5 cups Berry Vodka, 2 cups Lemonade, and a splash of Cranberry Juice. Garnish with berries.',
-            color: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            icon: '🍓',
-            tags: ['Fruity', 'Tart']
-        },
-        {
-            id: 'sunset_breeze',
-            title: 'Sunset Breeze',
-            description: 'A vibrant orange mix.',
-            ingredients: ['1 part Tequila', '1 part Orange Juice', 'Splash of Grenadine'],
-            pitcher: 'For 1 Quart: Mix 1.5 cups Tequila, 2.5 cups Orange Juice. Pour Grenadine slowly at the end for effect.',
-            color: 'linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)',
-            icon: '🍊',
-            tags: ['Citrus', 'Strong']
-        },
-        {
-            id: 'blue_lagoon',
-            title: 'Blue Hyena',
-            description: 'Electric blue citrus.',
-            ingredients: ['1 part Blue Curacao', '1 part Vodka', '1 part Sprite'],
-            pitcher: 'For 1 Quart: Mix 1 cup Vodka, 1 cup Blue Curacao, and 2 cups Sprite. Serve chilled.',
-            color: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)',
+            id: 'electric_hyena',
+            title: 'Electric Hyena',
+            description: 'Shockingly hydrating blue raspberry vodka mix.',
+            ingredients: ['1 part Vodka', '2 parts Blue Raspberry Gatorade', '1 part Lemon-Lime Soda'],
+            pitcher: 'For 1 Quart: Mix 1 cup (8oz) Vodka, 2 cups (16oz) Blue Raspberry Gatorade, and 1 cup (8oz) Sprite. Serve chilled.',
+            color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
             icon: '⚡',
-            tags: ['Party', 'Sweet']
+            tags: ['Hydrating', 'Vodka', 'Blue']
+        },
+        {
+            id: 'desert_rose',
+            title: 'Desert Rose',
+            description: 'Refreshing tequila blend with natural electrolytes.',
+            ingredients: ['1 part Tequila', '2 parts Watermelon Juice', '1 part Coconut Water', 'Squeeze of Lime'],
+            pitcher: 'For 1 Quart: Mix 1 cup (8oz) Tequila, 2 cups (16oz) Watermelon Juice, and 1 cup (8oz) Coconut Water. Add juice of 2 limes.',
+            color: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)',
+            icon: '🍉',
+            tags: ['Hydrating', 'Tequila', 'Fruity']
+        },
+        {
+            id: 'savannah_sunrise',
+            title: 'Savannah Sunrise',
+            description: 'Tropical rum punch to keep you going.',
+            ingredients: ['1 part Rum', '1.5 parts Orange Gatorade', '1.5 parts Pineapple Juice'],
+            pitcher: 'For 1 Quart: Mix 1 cup (8oz) Rum, 1.5 cups (12oz) Orange Gatorade, and 1.5 cups (12oz) Pineapple Juice. Garnish with orange slices.',
+            color: 'linear-gradient(120deg, #f6d365 0%, #fda085 100%)',
+            icon: '🌅',
+            tags: ['Hydrating', 'Rum', 'Tropical']
+        },
+        {
+            id: 'mock_jito',
+            title: 'Mock-jito Blast',
+            description: 'Crisp minty freshness without the buzz.',
+            ingredients: ['2 parts Limeade', '1 part Cucumber Water', '1 part Sprite', 'Fresh Mint'],
+            pitcher: 'For 1 Quart (Non-Alc): Mix 2 cups (16oz) Limeade, 1 cup (8oz) Cucumber Water, and 1 cup (8oz) Sprite. Stir in handful of fresh mint leaves.',
+            color: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+            icon: '🍃',
+            tags: ['Non-Alcoholic', 'Fresh', 'Zesty']
+        },
+        {
+            id: 'berry_boost',
+            title: 'Berry Boost',
+            description: 'Antioxidant-rich party punch.',
+            ingredients: ['1.5 parts Cranberry Juice', '1.5 parts Pomegranate Juice', '1 part Sparkling Water'],
+            pitcher: 'For 1 Quart (Non-Alc): Mix 1.5 cups (12oz) Cranberry Juice, 1.5 cups (12oz) Pomegranate Juice, and 1 cup (8oz) Sparkling Water.',
+            color: 'linear-gradient(to top, #c471f5 0%, #fa71cd 100%)',
+            icon: '🍇',
+            tags: ['Non-Alcoholic', 'Fruity', 'Tart']
         }
     ],
 
