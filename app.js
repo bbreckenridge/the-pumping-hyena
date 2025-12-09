@@ -67,8 +67,7 @@ const app = {
         gameOverModal: document.getElementById('game-over-modal'),
         gameOverStats: document.getElementById('game-over-stats'),
         playAgainBtn: document.getElementById('play-again-btn'),
-        backToLobbyBtn: document.getElementById('back-to-lobby-btn'),
-        endGameBtn: document.getElementById('end-game-btn')
+        backToLobbyBtn: document.getElementById('back-to-lobby-btn')
     },
 
     init() {
@@ -79,11 +78,23 @@ const app = {
         const session = localStorage.getItem('hyena_session');
         if (session) {
             try {
-                const { roomCode, playerName } = JSON.parse(session);
+                const sess = JSON.parse(session);
+                const { roomCode, playerName, timestamp } = sess;
+
+                // Check expiry (2 hours)
+                const ONE_HOUR = 60 * 60 * 1000;
+                const EXPIRY_TIME = 2 * ONE_HOUR; // Match server cleanup
+
+                if (timestamp && (Date.now() - timestamp > EXPIRY_TIME)) {
+                    console.log('Session expired');
+                    localStorage.removeItem('hyena_session');
+                    return;
+                }
+
                 if (roomCode && playerName) {
                     this.state.roomCode = roomCode;
                     this.state.playerName = playerName;
-                    this.joinGameRequest(roomCode, playerName);
+                    this.joinGameRequest(roomCode, playerName, true);
                 }
             } catch (e) {
                 console.error('Invalid session');
@@ -244,7 +255,7 @@ const app = {
         await this.joinGameRequest(code, name);
     },
 
-    async joinGameRequest(roomCode, playerName) {
+    async joinGameRequest(roomCode, playerName, isAutoJoin = false) {
         try {
             const res = await fetch('/api/join_game', {
                 method: 'POST',
@@ -254,17 +265,28 @@ const app = {
             const data = await res.json();
 
             if (data.success) {
-                // Save session
+                // Save session with timestamp
                 localStorage.setItem('hyena_session', JSON.stringify({
                     roomCode: roomCode,
-                    playerName: playerName
+                    playerName: playerName,
+                    timestamp: Date.now()
                 }));
                 this.enterGame();
             } else {
-                this.showAlert('Error', data.message || 'Failed to join.');
+                if (isAutoJoin) {
+                    console.warn('Auto-join failed:', data.message);
+                    localStorage.removeItem('hyena_session');
+                    // Silently fail to lobby - maybe a subtle toast if possible, but alert is annoying on load
+                } else {
+                    this.showAlert('Error', data.message || 'Failed to join.');
+                }
             }
         } catch (e) {
-            this.showAlert('Error', 'Network error.');
+            if (isAutoJoin) {
+                localStorage.removeItem('hyena_session');
+            } else {
+                this.showAlert('Error', 'Network error.');
+            }
         }
     },
 
@@ -282,6 +304,8 @@ const app = {
         // Start polling
         this.pollInterval = setInterval(() => this.fetchGameState(), 1000);
         this.fetchGameState(); // Immediate fetch
+
+        this.requestWakeLock();
     },
 
     async fetchGameState() {
@@ -395,7 +419,7 @@ const app = {
 
                 if (isHost && !isMe) {
                     kickBtn = `<button class="kick-btn" onclick="app.kickPlayer('${p.name}')" title="Kick Player">✕</button>`;
-                    promoteBtn = `<button class="promote-btn" onclick="app.promoteHost('${p.name}')" title="Promote to Host" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;">👑</button>`;
+                    promoteBtn = `<button class="promote-btn" onclick="app.promoteHost('${p.name}')" title="Promote to Host">+</button>`;
                 }
 
                 let shotControls = '';
@@ -414,7 +438,7 @@ const app = {
                 return `
                     <div class="player-item ${isCurrent ? 'active' : ''}">
                         <div class="player-info">
-                            <div class="player-name">${isCurrent ? '👉 ' : ''}${isHostP ? '👑 ' : ''}${p.name}</div>
+                            <div class="player-name">${isCurrent ? '👉 ' : ''}${isHostP ? '<span class="host-icon" title="Host">👑</span>' : ''}${p.name}</div>
                             ${promoteBtn}
                             ${kickBtn}
                         </div>

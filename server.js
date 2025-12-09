@@ -415,40 +415,25 @@ app.post('/api/promote_host', (req, res) => {
         return res.json({ success: false, message: 'Player not found' });
     }
 
+    // Capture current active player name before mutation
+    const activePlayerName = (game.currentPlayerIndex < game.players.length) ? game.players[game.currentPlayerIndex].name : null;
+
     // Move new host to index 0
     const newHost = game.players[newHostIndex];
     game.players.splice(newHostIndex, 1);
     game.players.unshift(newHost); // Add to front
 
-    // Adjust current player index so the turn doesn't jump randomly
-    // If the person who moved was BEFORE current player, index shifts down 1?
-    // This is complex, simplest is just to reset turn or let it be slightly weird for one turn.
-    // Let's just recalibrate current player index by name
-    const currentPlayerName = game.players[game.currentPlayerIndex]?.name || game.players[0]?.name;
-    // (This works but we just mutated the array, so we need to find them again)
-    // Actually, simple reset is safer:
-    // game.currentPlayerIndex = 0; // Maybe not ideal.
-    // Let's try to preserve the active player
-    // Note: older logic depended on index. If we shuffle array, index points to new person.
-
-    // Better strategy for array mutation:
-    // Swap index 0 and newHostIndex? 
-    // If we swap, the turn order changes for everyone.
-    // Moving to front strictly means everyone shifts. 
-    // Let's just find the current active player's name and re-find their index.
-
-    // We already have a problem: 'currentPlayerName' logic above was reading from pre-mutated array if I used const.
-    // But I haven't implemented that fully.
-
-    // Let's stick to: Move to front. Re-find current player by name.
-    // We need to capture the current active player's name BEFORE mutation (Wait, I can just use game.players[game.currentPlayerIndex].name).
-    // Actually, I can't trust game.players[game.currentPlayerIndex] if the array is changing.
-
-    // Correct logic:
-    const activePlayerName = (game.currentPlayerIndex < game.players.length) ? game.players[game.currentPlayerIndex].name : null;
-
-    // ... mutation code ...
-    // Move to front logic repeated for clarity in final block
+    // Restore correct current player index
+    if (activePlayerName) {
+        const newActiveIndex = game.players.findIndex(p => p.name === activePlayerName);
+        if (newActiveIndex !== -1) {
+            game.currentPlayerIndex = newActiveIndex;
+        } else {
+            game.currentPlayerIndex = 0; // Fallback
+        }
+    } else {
+        game.currentPlayerIndex = 0;
+    }
 
     game.logs.push(`${new_host_name} is now the Host!`);
     io.to(room_code).emit('game_update', getGameState(room_code));
