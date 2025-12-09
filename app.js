@@ -779,7 +779,9 @@ const app = {
             description: 'A refreshing green shot.',
             ingredients: ['1 part Cucumber Vodka', '1 part Watermelon Liqueur', 'Splash of Soda Water'],
             pitcher: 'For 1 Quart: Mix 1.5 cups Cucumber Vodka, 1.5 cups Watermelon Liqueur, and top with Soda Water. Add ice and cucumber slices.',
-            color: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)'
+            color: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)',
+            icon: '🥒',
+            tags: ['Refreshing', 'Light']
         },
         {
             id: 'pineapple_coconut',
@@ -787,7 +789,9 @@ const app = {
             description: 'Tropical sweetness.',
             ingredients: ['1 part Coconut Rum', '1 part Pineapple Juice', 'Splash of Lime Juice'],
             pitcher: 'For 1 Quart: Mix 2 cups Coconut Rum, 2 cups Pineapple Juice, and 1/4 cup Lime Juice. Shake well and serve over ice.',
-            color: 'linear-gradient(135deg, #fce38a 0%, #f38181 100%)'
+            color: 'linear-gradient(135deg, #fce38a 0%, #f38181 100%)',
+            icon: '🥥',
+            tags: ['Sweet', 'Tropical']
         },
         {
             id: 'berry_lemonade',
@@ -795,7 +799,9 @@ const app = {
             description: 'Sweet and tart goodness.',
             ingredients: ['1 part Berry Vodka', '1 part Lemonade', 'Splash of Cranberry Juice'],
             pitcher: 'For 1 Quart: Mix 1.5 cups Berry Vodka, 2 cups Lemonade, and a splash of Cranberry Juice. Garnish with berries.',
-            color: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+            color: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            icon: '🍓',
+            tags: ['Fruity', 'Tart']
         },
         {
             id: 'sunset_breeze',
@@ -803,7 +809,9 @@ const app = {
             description: 'A vibrant orange mix.',
             ingredients: ['1 part Tequila', '1 part Orange Juice', 'Splash of Grenadine'],
             pitcher: 'For 1 Quart: Mix 1.5 cups Tequila, 2.5 cups Orange Juice. Pour Grenadine slowly at the end for effect.',
-            color: 'linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)'
+            color: 'linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)',
+            icon: '🍊',
+            tags: ['Citrus', 'Strong']
         },
         {
             id: 'blue_lagoon',
@@ -811,7 +819,9 @@ const app = {
             description: 'Electric blue citrus.',
             ingredients: ['1 part Blue Curacao', '1 part Vodka', '1 part Sprite'],
             pitcher: 'For 1 Quart: Mix 1 cup Vodka, 1 cup Blue Curacao, and 2 cups Sprite. Serve chilled.',
-            color: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)'
+            color: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)',
+            icon: '⚡',
+            tags: ['Party', 'Sweet']
         }
     ],
 
@@ -819,8 +829,15 @@ const app = {
         this.elements.recipesModal.classList.remove('hidden');
         this.elements.recipesList.innerHTML = this.recipes.map(r => `
             <div class="recipe-card" onclick="app.showRecipeDetails('${r.id}')">
-                <div class="recipe-img" style="background: ${r.color};"></div>
-                <div class="recipe-title">${r.title}</div>
+                <div class="recipe-img" style="background: ${r.color};">
+                    <span class="recipe-icon">${r.icon}</span>
+                </div>
+                <div class="recipe-content-preview">
+                    <div class="recipe-title">${r.title}</div>
+                    <div class="recipe-tags">
+                        ${r.tags.map(t => `<span class="recipe-tag">${t}</span>`).join('')}
+                    </div>
+                </div>
             </div>
         `).join('');
         this.elements.recipesList.classList.remove('hidden');
@@ -835,7 +852,9 @@ const app = {
         this.elements.recipeDetails.classList.remove('hidden');
 
         this.elements.recipeContent.innerHTML = `
-            <div class="recipe-detail-img" style="background: ${r.color};"></div>
+            <div class="recipe-detail-img" style="background: ${r.color};">
+                <span class="recipe-detail-icon">${r.icon}</span>
+            </div>
             <h3 style="color:var(--primary-color); margin-bottom:5px;">${r.title}</h3>
             <p style="color:#666; font-style:italic; margin-bottom:15px;">${r.description}</p>
             
