@@ -1007,22 +1007,10 @@ input[type="text"]:focus {
     background: #f9fafb;
 }
 
-/* Recipes Grid */
-.recipes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.recipe-card {
-    background: #f9fafb;
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+cursor: pointer;
+border: 2px solid transparent;
+transition: all 0.2s;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .recipe-card:hover {

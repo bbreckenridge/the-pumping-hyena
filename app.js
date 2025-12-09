@@ -40,6 +40,8 @@ const app = {
         menuBtn: document.getElementById('menu-btn'),
         menuDropdown: document.getElementById('menu-dropdown'),
         resetBtn: document.getElementById('reset-btn'),
+        leaveBtn: document.getElementById('leave-game-btn'),
+        endGameBtn: document.getElementById('end-game-btn'),
 
         // Modal
         cardModal: document.getElementById('card-modal'),
@@ -144,6 +146,7 @@ const app = {
         });
 
         this.elements.endGameBtn.addEventListener('click', () => this.endGame());
+        if (this.elements.leaveBtn) this.elements.leaveBtn.addEventListener('click', () => this.leaveGame());
         this.elements.playAgainBtn.addEventListener('click', () => this.resetGame());
         this.elements.backToLobbyBtn.addEventListener('click', () => {
             localStorage.removeItem('hyena_session');
@@ -300,12 +303,23 @@ const app = {
     },
 
     updateUI(data) {
-        // Show/Hide End Game Button (Host only)
+        // Show/Hide Buttons based on Host status
         const isHost = data.players.length > 0 && data.players[0].name === this.state.playerName;
+
         if (isHost) {
             this.elements.endGameBtn.style.display = 'block';
+            this.elements.resetBtn.style.display = 'block';
+            if (this.elements.leaveBtn) this.elements.leaveBtn.style.display = 'none';
         } else {
             this.elements.endGameBtn.style.display = 'none';
+            this.elements.resetBtn.style.display = 'none'; // Only host can reset? Or allow everyone? Previously everyone I think. User said "host should have option...". Let's restrict reset to host for safety if not already. But for now sticking to "Others can leave, host can end".
+            // Actually, let's keep reset for everyone or host-only? 
+            // The prompt says "Players besides the host should be able to leave... but not end it."
+            // Reset is strictly powerful. Let's restrict End/Reset to host.
+            // But previous code allowed reset by anyone via button?
+            // "this.elements.resetBtn.addEventListener('click', () => this.resetGame());" was for everyone.
+            // I will hide reset for non-hosts too to be cleaner.
+            if (this.elements.leaveBtn) this.elements.leaveBtn.style.display = 'block';
         }
 
         // Handle Game Over
@@ -374,10 +388,14 @@ const app = {
                 const isCurrent = i === data.current_player_index;
                 const playerStats = data.stats[p.name] || { shots: 0 };
                 const isMe = p.name === this.state.playerName;
+                const isHostP = i === 0;
 
                 let kickBtn = '';
+                let promoteBtn = '';
+
                 if (isHost && !isMe) {
                     kickBtn = `<button class="kick-btn" onclick="app.kickPlayer('${p.name}')" title="Kick Player">✕</button>`;
+                    promoteBtn = `<button class="promote-btn" onclick="app.promoteHost('${p.name}')" title="Promote to Host" style="background:none; border:none; cursor:pointer; font-size:1.1rem; margin-left:4px;">👑</button>`;
                 }
 
                 let shotControls = '';
@@ -396,7 +414,8 @@ const app = {
                 return `
                     <div class="player-item ${isCurrent ? 'active' : ''}">
                         <div class="player-info">
-                            <div class="player-name">${isCurrent ? '👉 ' : ''}${p.name}</div>
+                            <div class="player-name">${isCurrent ? '👉 ' : ''}${isHostP ? '👑 ' : ''}${p.name}</div>
+                            ${promoteBtn}
                             ${kickBtn}
                         </div>
                         <div class="shot-counter">
@@ -480,6 +499,12 @@ const app = {
     },
 
     async updateShots(playerName, change) {
+        // Enforce strict client-side check: Only modify own shots
+        if (playerName !== this.state.playerName) {
+            console.warn("Attempted to modify another player's shots. Action blocked.");
+            return;
+        }
+
         try {
             await fetch('/api/update_shots', {
                 method: 'POST',
@@ -625,6 +650,44 @@ const app = {
         });
     },
 
+    async leaveGame() {
+        if (!confirm('Are you sure you want to leave the game?')) return;
+        try {
+            await fetch('/api/leave_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_code: this.state.roomCode,
+                    player_name: this.state.playerName
+                })
+            });
+            // Clear session and reload
+            localStorage.removeItem('hyena_session');
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            localStorage.removeItem('hyena_session');
+            location.reload();
+        }
+    },
+
+    async promoteHost(newHostName) {
+        if (!confirm(`Promote ${newHostName} to Host? You will lose host privileges.`)) return;
+        try {
+            await fetch('/api/promote_host', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_code: this.state.roomCode,
+                    new_host_name: newHostName,
+                    requester: this.state.playerName
+                })
+            });
+        } catch (e) {
+            this.showAlert('Error', 'Failed to promote host.');
+        }
+    },
+
     closeModal() {
         this.elements.cardModal.classList.add('hidden');
     },
@@ -689,41 +752,41 @@ const app = {
         {
             id: 'cucumber_melon',
             title: 'Cucumber Melon Spritz',
-            description: 'A refreshing green shot perfect for starting the game.',
-            ingredients: ['1 part Cucumber Vodka', '1 part Watermelon Liqueur', 'Splash of Soda Water', 'Cucumber slice for garnish'],
-            pitcher: 'Mix 1 cup Cucumber Vodka, 1 cup Watermelon Liqueur, and 1/2 cup Soda Water. Stir with ice and strain.',
+            description: 'A refreshing green shot.',
+            ingredients: ['1 part Cucumber Vodka', '1 part Watermelon Liqueur', 'Splash of Soda Water'],
+            pitcher: 'For 1 Quart: Mix 1.5 cups Cucumber Vodka, 1.5 cups Watermelon Liqueur, and top with Soda Water. Add ice and cucumber slices.',
             color: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)'
         },
         {
             id: 'pineapple_coconut',
             title: 'Pineapple Coconut Cooler',
-            description: 'Tropical sweetness that goes down easy.',
+            description: 'Tropical sweetness.',
             ingredients: ['1 part Coconut Rum', '1 part Pineapple Juice', 'Splash of Lime Juice'],
-            pitcher: 'Mix 1.5 cups Coconut Rum, 1.5 cups Pineapple Juice, and 1/4 cup Lime Juice. Shake well.',
+            pitcher: 'For 1 Quart: Mix 2 cups Coconut Rum, 2 cups Pineapple Juice, and 1/4 cup Lime Juice. Shake well and serve over ice.',
             color: 'linear-gradient(135deg, #fce38a 0%, #f38181 100%)'
         },
         {
             id: 'berry_lemonade',
             title: 'Berry Lemonade Splash',
-            description: 'Sweet and tart berry goodness.',
+            description: 'Sweet and tart goodness.',
             ingredients: ['1 part Berry Vodka', '1 part Lemonade', 'Splash of Cranberry Juice'],
-            pitcher: 'Mix 1 cup Berry Vodka, 1.5 cups Lemonade, and 1/2 cup Cranberry Juice.',
+            pitcher: 'For 1 Quart: Mix 1.5 cups Berry Vodka, 2 cups Lemonade, and a splash of Cranberry Juice. Garnish with berries.',
             color: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
         },
         {
             id: 'sunset_breeze',
             title: 'Sunset Breeze',
-            description: 'A vibrant orange shot.',
+            description: 'A vibrant orange mix.',
             ingredients: ['1 part Tequila', '1 part Orange Juice', 'Splash of Grenadine'],
-            pitcher: 'Mix 1 cup Tequila, 1.5 cups Orange Juice. Pour Grenadine slowly at the end for effect.',
+            pitcher: 'For 1 Quart: Mix 1.5 cups Tequila, 2.5 cups Orange Juice. Pour Grenadine slowly at the end for effect.',
             color: 'linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)'
         },
         {
             id: 'blue_lagoon',
             title: 'Blue Hyena',
-            description: 'Electric blue and citrusy.',
+            description: 'Electric blue citrus.',
             ingredients: ['1 part Blue Curacao', '1 part Vodka', '1 part Sprite'],
-            pitcher: 'Mix 1 cup Vodka, 1 cup Blue Curacao, 1 cup Sprite.',
+            pitcher: 'For 1 Quart: Mix 1 cup Vodka, 1 cup Blue Curacao, and 2 cups Sprite. Serve chilled.',
             color: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)'
         }
     ],
