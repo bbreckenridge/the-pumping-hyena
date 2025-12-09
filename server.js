@@ -161,6 +161,11 @@ app.post('/api/draw_card', (req, res) => {
 
     const game = games[room_code];
 
+    // Check if there is already a pending card
+    if (game.pendingCard) {
+        return res.json({ success: false, message: 'There is already a pending card.' });
+    }
+
     // Check if it's this player's turn
     const currentPlayer = game.players[game.currentPlayerIndex];
     if (!currentPlayer || currentPlayer.name !== player_name) {
@@ -196,12 +201,42 @@ app.post('/api/draw_card', (req, res) => {
         }
     }
 
+    // Set Pending State
+    game.pendingCard = { card, player: player_name };
 
+    // Log intent but don't finalize
+    // game.logs.push(`${player_name} is looking at a card...`); 
+
+    // Update stats immediately? Or wait? Let's wait for confirmation to update stats.
+
+    game.lastActivity = Date.now();
+
+    io.to(room_code).emit('game_update', getGameState(room_code));
+    res.json({ success: true, card });
+});
+
+app.post('/api/confirm_card', (req, res) => {
+    const { room_code, player_name } = req.body;
+    const game = games[room_code];
+
+    if (!game || !game.pendingCard) {
+        return res.json({ success: false, message: 'No card pending or game not found' });
+    }
+
+    // Verify it is the current player confirming
+    if (game.pendingCard.player !== player_name) {
+        return res.json({ success: false, message: 'Not your card to confirm' });
+    }
+
+    const { card } = game.pendingCard;
+
+    // Move pending to historical/active
     game.discard.push({
         ...card,
         discarded_by: player_name
     });
-    game.lastCard = { card, player: player_name };
+    game.lastCard = game.pendingCard;
+    game.pendingCard = null; // Clear pending
 
     let logMessage = `${player_name} drew: ${card.title}`;
     if (card.target_player) {
@@ -214,11 +249,14 @@ app.post('/api/draw_card', (req, res) => {
         game.stats[player_name].cardsDrawn++;
     }
 
+    // Start Timer if applicable
     if (card.timer_duration) {
         const timerId = generateId();
         game.timers.push({
             id: timerId,
             label: `${player_name}: ${card.title}`,
+            title: card.title, // Add details for reference
+            text: card.text,   // Add details for reference
             duration: card.timer_duration,
             end_time: Date.now() / 1000 + card.timer_duration,
             owner: player_name
@@ -232,7 +270,7 @@ app.post('/api/draw_card', (req, res) => {
     game.lastActivity = Date.now();
 
     io.to(room_code).emit('game_update', getGameState(room_code));
-    res.json({ success: true, card });
+    res.json({ success: true });
 });
 
 app.post('/api/reset_game', (req, res) => {
@@ -407,6 +445,7 @@ function getGameState(roomCode) {
         timers: activeTimers,
         logs: game.logs.slice(-10),
         last_card: game.lastCard,
+        pending_card: game.pendingCard || null,
         current_player: game.players[game.currentPlayerIndex]?.name || null,
         current_player_index: game.currentPlayerIndex,
         stats: game.stats,

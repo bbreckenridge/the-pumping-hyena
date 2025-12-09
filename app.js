@@ -4,7 +4,9 @@ const app = {
         playerName: null,
         currentPlayer: null,
         lastCurrentPlayer: null,
-        timerCount: 0
+        timerCount: 0,
+        isShowingPending: false,
+        modalMode: 'view'
     },
 
     socket: null,
@@ -24,6 +26,16 @@ const app = {
         lastCardDisplay: document.getElementById('last-card-display'),
         deckVisual: document.getElementById('deck-visual'),
 
+        // Recipes
+        recipesBtn: document.getElementById('recipes-btn'),
+        recipesModal: document.getElementById('recipes-modal'),
+        recipesList: document.getElementById('recipes-list'),
+        recipeDetails: document.getElementById('recipe-details'),
+        recipeContent: document.getElementById('recipe-content'),
+        backToRecipesBtn: document.getElementById('back-to-recipes-btn'),
+        recipesCloseBtn: document.getElementById('recipes-close-btn'),
+        recipesCloseBtnX: document.getElementById('recipes-close-btn-x'),
+
         // Menu
         menuBtn: document.getElementById('menu-btn'),
         menuDropdown: document.getElementById('menu-dropdown'),
@@ -35,6 +47,8 @@ const app = {
         modalCardText: document.getElementById('modal-card-text'),
         modalTimerBadge: document.getElementById('modal-timer-badge'),
         modalTimerVal: document.getElementById('modal-timer-val'),
+        modalActionsArea: document.getElementById('modal-actions-area'),
+        modalWaitingText: document.getElementById('modal-waiting-text'),
         modalCloseBtn: document.getElementById('modal-close-btn'),
 
         discardModal: document.getElementById('discard-modal'),
@@ -109,7 +123,17 @@ const app = {
         });
 
         this.elements.resetBtn.addEventListener('click', () => this.resetGame());
-        this.elements.modalCloseBtn.addEventListener('click', () => this.closeModal());
+
+        // Recipes Events
+        this.elements.recipesBtn.addEventListener('click', () => {
+            this.elements.menuDropdown.classList.add('hidden'); // Close menu
+            this.showRecipes();
+        });
+        this.elements.backToRecipesBtn.addEventListener('click', () => this.elements.recipeDetails.classList.add('hidden'));
+        this.elements.recipesCloseBtn.addEventListener('click', () => this.elements.recipesModal.classList.add('hidden'));
+        if (this.elements.recipesCloseBtnX) this.elements.recipesCloseBtnX.addEventListener('click', () => this.elements.recipesModal.classList.add('hidden'));
+
+        this.elements.modalCloseBtn.addEventListener('click', () => this.confirmCard());
         this.elements.lastCardDisplay.addEventListener('click', () => this.viewDiscardPile());
         this.elements.discardCloseBtn.addEventListener('click', () => this.closeDiscardModal());
         this.elements.alertOk.addEventListener('click', () => this.closeAlert());
@@ -305,7 +329,6 @@ const app = {
         }
 
         // Update current turn indicator
-        // Update current turn indicator
         if (data.current_player) {
             const isMyTurn = data.current_player === this.state.playerName;
 
@@ -343,7 +366,6 @@ const app = {
             }
         }
 
-
         // Update Players with shot counters
         if (data.players && data.stats) {
             const isHost = data.players.length > 0 && data.players[0].name === this.state.playerName;
@@ -358,6 +380,19 @@ const app = {
                     kickBtn = `<button class="kick-btn" onclick="app.kickPlayer('${p.name}')" title="Kick Player">✕</button>`;
                 }
 
+                let shotControls = '';
+                if (isMe) {
+                    shotControls = `
+                        <button class="shot-btn minus" onclick="app.updateShots('${p.name}', -1)">−</button>
+                        <span class="shot-value">${playerStats.shots}</span>
+                        <button class="shot-btn plus" onclick="app.updateShots('${p.name}', 1)">+</button>
+                    `;
+                } else {
+                    shotControls = `
+                        <span class="shot-value" style="color:#9CA3AF">${playerStats.shots}</span>
+                    `;
+                }
+
                 return `
                     <div class="player-item ${isCurrent ? 'active' : ''}">
                         <div class="player-info">
@@ -366,9 +401,7 @@ const app = {
                         </div>
                         <div class="shot-counter">
                             <span style="font-size:0.8rem; color:#666; margin-right:4px;">🥃 Shots:</span>
-                            <button class="shot-btn minus" onclick="app.updateShots('${p.name}', -1)">−</button>
-                            <span class="shot-value">${playerStats.shots}</span>
-                            <button class="shot-btn plus" onclick="app.updateShots('${p.name}', 1)">+</button>
+                            ${shotControls}
                         </div>
                     </div>
                 `;
@@ -388,12 +421,25 @@ const app = {
             this.elements.lastCardDisplay.innerHTML = '<p>None</p>';
         }
 
+        // Pending Card Logic
+        if (data.pending_card) {
+            const isMe = data.pending_card.player === this.state.playerName;
+            this.showCardModal(data.pending_card.card, isMe ? 'confirm' : 'waiting', data.pending_card.player);
+        } else {
+            if (this.state.isShowingPending) {
+                this.closeModal();
+                this.state.isShowingPending = false;
+            }
+        }
+
         // Update Timers
         this.renderTimers(data.timers);
     },
 
+    lastTimers: [],
+
     renderTimers(timers) {
-        // Play sound if new timer was added
+        this.lastTimers = timers || [];
         if (timers.length > this.state.timerCount && timers.length > 0) {
             this.playSound('timer');
         }
@@ -408,7 +454,7 @@ const app = {
             const pct = (t.remaining / t.duration) * 100;
             const isFinished = t.remaining <= 0;
             return `
-                <div class="timer-item" style="${isFinished ? 'opacity:0.6; background:#fee2e2; border-color:#ef4444;' : ''}">
+                <div class="timer-item" onclick="app.viewTimerDetails('${t.id}')" style="cursor:pointer; ${isFinished ? 'opacity:0.6; background:#fee2e2; border-color:#ef4444;' : ''}">
                     <div class="timer-info" style="flex:1">
                         <div class="timer-label">${t.label}</div>
                         <div style="height:4px; background:#e5e7eb; margin-top:4px; border-radius:2px; overflow:hidden;">
@@ -419,6 +465,18 @@ const app = {
                 </div>
             `;
         }).join('');
+    },
+
+    viewTimerDetails(timerId) {
+        const timer = this.lastTimers.find(t => t.id === timerId);
+        if (timer) {
+            const card = {
+                title: timer.title || timer.label,
+                text: timer.text || "No details available.",
+                timer_duration: timer.duration
+            };
+            this.showCardModal(card, 'view');
+        }
     },
 
     async updateShots(playerName, change) {
@@ -478,8 +536,7 @@ const app = {
             const data = await res.json();
 
             if (data.success) {
-                this.playSound('draw');
-                this.showCardModal(data.card);
+                // Modal shown by game update pending logic
             } else {
                 this.showAlert('Info', data.message || 'Could not draw card');
             }
@@ -487,6 +544,67 @@ const app = {
             console.error('Draw card error:', e);
             this.showAlert('Error', 'Failed to draw card. Please try again.');
         }
+    },
+
+    async confirmCard() {
+        if (this.elements.modalCloseBtn.disabled) return;
+
+        if (this.state.modalMode === 'view') {
+            this.closeModal();
+            return;
+        }
+
+        try {
+            this.elements.modalCloseBtn.disabled = true;
+            this.elements.modalCloseBtn.textContent = 'Confirming...';
+
+            await fetch('/api/confirm_card', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_code: this.state.roomCode, player_name: this.state.playerName })
+            });
+        } catch (e) {
+            this.elements.modalCloseBtn.disabled = false;
+            this.elements.modalCloseBtn.textContent = 'Got it!';
+        }
+    },
+
+    showCardModal(card, mode = 'view', ownerName = null) {
+        this.state.modalMode = mode;
+        this.elements.modalCardTitle.textContent = card.title;
+        this.elements.modalCardText.textContent = card.text;
+
+        if (card.timer_duration) {
+            this.elements.modalTimerBadge.classList.remove('hidden');
+            this.elements.modalTimerVal.textContent = card.timer_duration;
+        } else {
+            this.elements.modalTimerBadge.classList.add('hidden');
+        }
+
+        const btn = this.elements.modalCloseBtn;
+        const waitingText = this.elements.modalWaitingText;
+
+        btn.disabled = false;
+        btn.textContent = 'Got it!';
+
+        if (mode === 'confirm') {
+            btn.classList.remove('hidden');
+            waitingText.classList.add('hidden');
+            this.state.isShowingPending = true;
+            this.playSound('draw');
+        } else if (mode === 'waiting') {
+            btn.classList.add('hidden');
+            waitingText.classList.remove('hidden');
+            waitingText.textContent = `Waiting for ${ownerName || 'player'} to confirm...`;
+            this.state.isShowingPending = true;
+        } else {
+            btn.classList.remove('hidden');
+            btn.textContent = 'Close';
+            waitingText.classList.add('hidden');
+            this.state.isShowingPending = false;
+        }
+
+        this.elements.cardModal.classList.remove('hidden');
     },
 
     async resetGame() {
@@ -505,20 +623,6 @@ const app = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ room_code: this.state.roomCode })
         });
-    },
-
-    showCardModal(card) {
-        this.elements.modalCardTitle.textContent = card.title;
-        this.elements.modalCardText.textContent = card.text;
-
-        if (card.timer_duration) {
-            this.elements.modalTimerBadge.classList.remove('hidden');
-            this.elements.modalTimerVal.textContent = card.timer_duration;
-        } else {
-            this.elements.modalTimerBadge.classList.add('hidden');
-        }
-
-        this.elements.cardModal.classList.remove('hidden');
     },
 
     closeModal() {
@@ -578,6 +682,88 @@ const app = {
                 console.error(`${err.name}, ${err.message}`);
             }
         }
+    },
+
+    // Drink Recipes Data
+    recipes: [
+        {
+            id: 'cucumber_melon',
+            title: 'Cucumber Melon Spritz',
+            description: 'A refreshing green shot perfect for starting the game.',
+            ingredients: ['1 part Cucumber Vodka', '1 part Watermelon Liqueur', 'Splash of Soda Water', 'Cucumber slice for garnish'],
+            pitcher: 'Mix 1 cup Cucumber Vodka, 1 cup Watermelon Liqueur, and 1/2 cup Soda Water. Stir with ice and strain.',
+            color: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)'
+        },
+        {
+            id: 'pineapple_coconut',
+            title: 'Pineapple Coconut Cooler',
+            description: 'Tropical sweetness that goes down easy.',
+            ingredients: ['1 part Coconut Rum', '1 part Pineapple Juice', 'Splash of Lime Juice'],
+            pitcher: 'Mix 1.5 cups Coconut Rum, 1.5 cups Pineapple Juice, and 1/4 cup Lime Juice. Shake well.',
+            color: 'linear-gradient(135deg, #fce38a 0%, #f38181 100%)'
+        },
+        {
+            id: 'berry_lemonade',
+            title: 'Berry Lemonade Splash',
+            description: 'Sweet and tart berry goodness.',
+            ingredients: ['1 part Berry Vodka', '1 part Lemonade', 'Splash of Cranberry Juice'],
+            pitcher: 'Mix 1 cup Berry Vodka, 1.5 cups Lemonade, and 1/2 cup Cranberry Juice.',
+            color: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+        },
+        {
+            id: 'sunset_breeze',
+            title: 'Sunset Breeze',
+            description: 'A vibrant orange shot.',
+            ingredients: ['1 part Tequila', '1 part Orange Juice', 'Splash of Grenadine'],
+            pitcher: 'Mix 1 cup Tequila, 1.5 cups Orange Juice. Pour Grenadine slowly at the end for effect.',
+            color: 'linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)'
+        },
+        {
+            id: 'blue_lagoon',
+            title: 'Blue Hyena',
+            description: 'Electric blue and citrusy.',
+            ingredients: ['1 part Blue Curacao', '1 part Vodka', '1 part Sprite'],
+            pitcher: 'Mix 1 cup Vodka, 1 cup Blue Curacao, 1 cup Sprite.',
+            color: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)'
+        }
+    ],
+
+    showRecipes() {
+        this.elements.recipesModal.classList.remove('hidden');
+        this.elements.recipesList.innerHTML = this.recipes.map(r => `
+            <div class="recipe-card" onclick="app.showRecipeDetails('${r.id}')">
+                <div class="recipe-img" style="background: ${r.color};"></div>
+                <div class="recipe-title">${r.title}</div>
+            </div>
+        `).join('');
+        this.elements.recipesList.classList.remove('hidden');
+        this.elements.recipeDetails.classList.add('hidden');
+    },
+
+    showRecipeDetails(id) {
+        const r = this.recipes.find(recipe => recipe.id === id);
+        if (!r) return;
+
+        this.elements.recipesList.classList.add('hidden');
+        this.elements.recipeDetails.classList.remove('hidden');
+
+        this.elements.recipeContent.innerHTML = `
+            <div class="recipe-detail-img" style="background: ${r.color};"></div>
+            <h3 style="color:var(--primary-color); margin-bottom:5px;">${r.title}</h3>
+            <p style="color:#666; font-style:italic; margin-bottom:15px;">${r.description}</p>
+            
+            <div class="recipe-section">
+                <h4>Ingredients (Shot)</h4>
+                <ul>
+                    ${r.ingredients.map(i => `<li>${i}</li>`).join('')}
+                </ul>
+            </div>
+            
+            <div class="recipe-section">
+                 <h4>Pitcher Instructions <span class="pitcher-badge">Party Size</span></h4>
+                 <p style="font-size:0.95rem; line-height:1.5;">${r.pitcher}</p>
+            </div>
+        `;
     }
 };
 
